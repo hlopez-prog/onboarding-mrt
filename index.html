@@ -1,0 +1,1234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agenda de Onboarding | Minera Río Tinto</title>
+<script src="https://cdn.jsdelivr.net/npm/gun/gun.js"></script>
+<style>
+:root{
+  --primary:#1a3a5c;--accent:#c8a951;--success:#2e7d52;--danger:#b91c1c;
+  --warn:#d97706;--border:#dee2e6;--muted:#6c757d;--bg:#f0f2f5;
+  --tag-dir:#1a3a5c;--tag-op:#2e7d52;--tag-travel:#7c3aed;
+  --tag-fiscal:#0891b2;--tag-review:#9c6f00;--tag-admin:#4b5563;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#212529;font-size:14px;}
+
+/* HEADER */
+.header{background:var(--primary);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+.header h1{font-size:1.15rem;font-weight:700;}
+.header p{font-size:.75rem;opacity:.75;margin-top:1px;}
+.header-right{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
+.gold-bar{height:4px;background:var(--accent);}
+
+/* VIEW-ONLY BANNER */
+.view-banner{background:#fef3c7;border-bottom:2px solid var(--accent);padding:8px 24px;display:flex;align-items:center;gap:10px;font-size:.82rem;font-weight:600;color:#92400e;}
+
+/* SYNC */
+.sync-dot{width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;margin-right:3px;transition:background .4s;}
+.sync-dot.live{background:#22c55e;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.room-chip{background:rgba(255,255,255,.13);border-radius:20px;padding:3px 10px;font-size:.72rem;display:flex;align-items:center;gap:5px;}
+
+/* USER CHIP */
+.user-chip{background:rgba(255,255,255,.15);border-radius:20px;padding:4px 12px;font-size:.78rem;display:flex;align-items:center;gap:7px;cursor:pointer;}
+.user-avatar{width:24px;height:24px;border-radius:50%;background:var(--accent);color:var(--primary);font-weight:700;font-size:.7rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* BUTTONS */
+.btn{padding:6px 14px;border-radius:6px;border:none;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .2s;display:inline-flex;align-items:center;gap:4px;}
+.btn-outline{background:transparent;border:1.5px solid rgba(255,255,255,.55);color:#fff;}
+.btn-outline:hover{background:rgba(255,255,255,.12);}
+.btn-accent{background:var(--accent);color:var(--primary);}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{filter:brightness(1.1);}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-success{background:var(--success);color:#fff;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-ghost:hover{background:#f0f0f0;}
+.btn-sm{padding:4px 10px;font-size:.73rem;}
+.btn:disabled{opacity:.45;cursor:not-allowed;}
+
+/* TABS */
+.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);padding:0 24px;}
+.tab-btn{padding:12px 22px;border:none;background:none;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;}
+.tab-btn.active{color:var(--primary);border-bottom-color:var(--accent);}
+
+/* MAIN */
+.main{padding:18px 24px;max-width:1200px;margin:0 auto;}
+
+/* PROGRESS */
+.progress-card{background:#fff;border-radius:10px;padding:14px 18px;margin-bottom:18px;border:1px solid var(--border);}
+.progress-card h3{font-size:.88rem;color:var(--primary);font-weight:700;margin-bottom:8px;}
+.prog-row{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:5px;}
+.bar-outer{background:#e9ecef;border-radius:999px;height:8px;}
+.bar-inner{height:8px;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .5s;}
+.prog-stats{display:flex;gap:18px;margin-top:8px;flex-wrap:wrap;font-size:.75rem;}
+.prog-stats strong{color:var(--primary);}
+
+/* LEGEND */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;}
+.leg-item{display:flex;align-items:center;gap:4px;font-size:.73rem;color:var(--muted);}
+.leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* WEEK NAV */
+.week-nav{display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;}
+.week-btn{padding:5px 16px;border-radius:20px;border:2px solid var(--border);background:#fff;cursor:pointer;font-size:.8rem;font-weight:600;color:var(--muted);transition:all .2s;}
+.week-btn.active{background:var(--primary);color:#fff;border-color:var(--primary);}
+
+/* DAY CARD */
+.day-card{background:#fff;border-radius:10px;margin-bottom:12px;border:1px solid var(--border);overflow:hidden;}
+.day-header{display:flex;align-items:center;padding:11px 16px;cursor:pointer;user-select:none;gap:9px;}
+.day-num{background:var(--primary);color:#fff;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;}
+.day-info{flex:1;}
+.day-info h3{font-size:.87rem;font-weight:700;color:var(--primary);}
+.day-info p{font-size:.72rem;color:var(--muted);margin-top:1px;}
+.day-dprog{font-size:.72rem;color:var(--muted);white-space:nowrap;}
+.day-toggle{color:var(--muted);transition:transform .2s;font-size:.88rem;}
+.day-toggle.open{transform:rotate(180deg);}
+.day-card.complete .day-num{background:var(--success);}
+.day-card.complete{background:#f0faf4;}
+
+/* ACTIVITIES */
+.activities{padding:0 16px 12px;display:none;}
+.activities.open{display:block;}
+.activity{display:flex;gap:9px;padding:9px 0;border-bottom:1px solid #f3f3f3;position:relative;}
+.activity:last-child{border-bottom:none;}
+.act-check{margin-top:3px;flex-shrink:0;}
+.act-check input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--success);}
+.act-body{flex:1;}
+.act-time{font-size:.71rem;color:var(--muted);margin-bottom:2px;}
+.act-tag{display:inline-block;font-size:.67rem;padding:2px 7px;border-radius:999px;color:#fff;font-weight:600;margin-bottom:3px;}
+.act-title{font-size:.85rem;font-weight:600;color:#212529;line-height:1.3;}
+.act-title.done{text-decoration:line-through;color:var(--muted);}
+.act-who{font-size:.7rem;color:var(--success);margin-top:2px;font-style:italic;}
+.act-detail{font-size:.77rem;color:#555;line-height:1.5;margin-top:3px;}
+.act-note{margin-top:6px;}
+.act-note textarea{width:100%;font-size:.75rem;border:1px solid var(--border);border-radius:5px;padding:5px 8px;resize:vertical;min-height:40px;font-family:inherit;background:#fafafa;}
+.act-note textarea:focus{outline:none;border-color:var(--primary);background:#fff;}
+.act-note textarea:disabled{background:#f5f5f5;cursor:not-allowed;color:var(--muted);}
+.act-actions{display:none;gap:4px;margin-top:4px;}
+.admin-mode .act-actions{display:flex;}
+.act-check input:disabled{cursor:not-allowed;opacity:.5;}
+
+/* TAGS */
+.tag-dir{background:var(--tag-dir);}.tag-op{background:var(--tag-op);}
+.tag-travel{background:var(--tag-travel);}.tag-fiscal{background:var(--tag-fiscal);}
+.tag-review{background:var(--tag-review);}.tag-admin{background:var(--tag-admin);}
+
+/* ADMIN BAR */
+.admin-bar{background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:9px 16px;margin-bottom:14px;display:none;align-items:center;gap:10px;flex-wrap:wrap;}
+.admin-bar.visible{display:flex;}
+.admin-badge{background:#ffc107;color:#212529;font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:999px;}
+
+/* ADD ACTIVITY */
+.add-act-btn{display:none;width:100%;margin-top:7px;padding:7px;border:1.5px dashed var(--border);background:transparent;border-radius:7px;cursor:pointer;font-size:.78rem;color:var(--muted);transition:all .2s;}
+.add-act-btn:hover{border-color:var(--primary);color:var(--primary);background:#f8f9fa;}
+.admin-mode .add-act-btn{display:block;}
+
+/* NOTES */
+.notes-global{background:#fff;border-radius:10px;padding:16px 18px;margin-top:12px;border:1px solid var(--border);}
+.notes-global h3{font-size:.85rem;color:var(--primary);margin-bottom:7px;font-weight:700;}
+.notes-global textarea{width:100%;min-height:64px;border:1px solid var(--border);border-radius:6px;padding:7px 11px;font-family:inherit;font-size:.8rem;resize:vertical;}
+.notes-global textarea:disabled{background:#f5f5f5;cursor:not-allowed;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;border-radius:12px;padding:26px;width:100%;max-width:480px;box-shadow:0 20px 60px rgba(0,0,0,.2);max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:1.05rem;color:var(--primary);margin-bottom:14px;}
+.modal label{display:block;font-size:.78rem;font-weight:600;color:#555;margin-bottom:3px;margin-top:11px;}
+.modal input,.modal textarea,.modal select{width:100%;border:1px solid var(--border);border-radius:6px;padding:7px 11px;font-size:.83rem;font-family:inherit;}
+.modal textarea{min-height:72px;resize:vertical;}
+.modal input:focus,.modal textarea:focus,.modal select:focus{outline:none;border-color:var(--primary);}
+.modal-footer{display:flex;gap:7px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap;}
+.modal-error{color:var(--danger);font-size:.76rem;margin-top:5px;display:none;}
+.modal-success{color:var(--success);font-size:.76rem;margin-top:5px;display:none;}
+
+/* AUTH MODAL TABS */
+.auth-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:16px;gap:0;}
+.auth-tab{flex:1;padding:9px;border:none;background:none;cursor:pointer;font-size:.85rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;text-align:center;}
+.auth-tab.active{color:var(--primary);border-bottom-color:var(--accent);}
+.auth-panel{display:none;}
+.auth-panel.active{display:block;}
+
+/* CHANGELOG PANEL */
+.changelog-panel{position:fixed;right:0;top:0;bottom:0;width:380px;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.15);z-index:900;transform:translateX(100%);transition:transform .3s;display:flex;flex-direction:column;}
+.changelog-panel.open{transform:translateX(0);}
+.cl-header{background:var(--primary);color:#fff;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;}
+.cl-header h3{font-size:.95rem;font-weight:700;}
+.cl-body{flex:1;overflow-y:auto;padding:12px;}
+.cl-entry{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0f0;}
+.cl-entry:last-child{border-bottom:none;}
+.cl-avatar{width:30px;height:30px;border-radius:50%;background:var(--primary);color:#fff;font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.cl-info{flex:1;}
+.cl-user{font-size:.78rem;font-weight:700;color:var(--primary);}
+.cl-action{font-size:.76rem;color:#444;margin-top:1px;line-height:1.4;}
+.cl-time{font-size:.68rem;color:var(--muted);margin-top:2px;}
+.cl-empty{text-align:center;color:var(--muted);font-size:.82rem;padding:30px 0;}
+.cl-filter{padding:10px 12px;border-bottom:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap;}
+.cl-filter select{flex:1;border:1px solid var(--border);border-radius:5px;padding:4px 8px;font-size:.76rem;font-family:inherit;}
+
+/* USERS MODAL */
+.user-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0f0;}
+.user-row:last-child{border-bottom:none;}
+.u-avatar{width:32px;height:32px;border-radius:50%;background:var(--primary);color:#fff;font-size:.75rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.u-info{flex:1;}
+.u-name{font-size:.83rem;font-weight:600;}
+.u-email{font-size:.73rem;color:var(--muted);}
+.u-badge{font-size:.67rem;padding:1px 7px;border-radius:999px;font-weight:700;}
+.u-badge.admin{background:#fef3c7;color:#92400e;}
+.u-badge.user{background:#e0f2fe;color:#0369a1;}
+.u-badge.viewer{background:#f3f4f6;color:#374151;}
+
+/* SHARE BANNER */
+.share-row{display:flex;gap:8px;align-items:center;background:#e8f4fd;border:1px solid #b3d7f5;border-radius:7px;padding:9px 14px;margin-bottom:14px;flex-wrap:wrap;}
+.share-url{flex:1;font-size:.74rem;color:#0369a1;word-break:break-all;font-family:monospace;min-width:120px;}
+
+/* PRINT */
+@media print{
+  .header-right,.tabs,.week-nav,.act-note,.admin-bar,.share-row,.notes-global,
+  .btn,.modal-overlay,.sync-dot,.room-chip,.add-act-btn,.act-actions,
+  .changelog-panel,.view-banner,.user-chip{display:none!important;}
+  .activities{display:block!important;}
+  .day-card{break-inside:avoid;border:1px solid #ccc!important;}
+  body{background:#fff;}
+  .main{padding:0;max-width:100%;}
+  .tab-panel{display:block!important;}
+  .week-panel{display:block!important;}
+  .tabs{display:none!important;}
+  h2.print-title{display:block!important;font-size:1.1rem;color:#000;margin:10px 0 6px;}
+  .act-check input[type="checkbox"]{-webkit-appearance:none;border:1.5px solid #333;width:14px;height:14px;vertical-align:middle;}
+  .act-check input:checked{background:#333;}
+  .act-who{display:none;}
+}
+h2.print-title{display:none;}
+
+.tab-panel{display:none;}.tab-panel.active{display:block;}
+.week-panel{display:none;}.week-panel.active{display:block;}
+.badge-new{background:var(--accent);color:var(--primary);font-size:.66rem;padding:1px 6px;border-radius:999px;font-weight:700;margin-left:4px;}
+
+/* VIEW ONLY */
+body.view-only .act-check input{pointer-events:none;}
+body.view-only .act-note textarea{pointer-events:none;background:#f9f9f9;}
+body.view-only .notes-global textarea{pointer-events:none;background:#f9f9f9;}
+body.view-only .add-act-btn{display:none!important;}
+body.view-only .act-actions{display:none!important;}
+</style>
+</head>
+<body>
+
+<!-- VIEW ONLY BANNER (shown when ?view=1) -->
+<div class="view-banner" id="viewBanner" style="display:none;">
+  👁️ <strong>MODO SOLO LECTURA</strong> — Estás viendo el avance de la agenda. No puedes realizar cambios.
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div>
+    <h1>📋 Agenda de Onboarding — Primeras 2 Semanas</h1>
+    <p>Minera Río Tinto S.A. de C.V. | Dirección de Administración y Finanzas</p>
+  </div>
+  <div class="header-right">
+    <div class="room-chip"><span class="sync-dot" id="syncDot"></span><span id="syncLabel">Conectando...</span></div>
+    <div class="user-chip" id="userChip" onclick="openUserMenu()" style="display:none;">
+      <div class="user-avatar" id="userAvatar">?</div>
+      <span id="userNameLabel">Usuario</span>
+    </div>
+    <button class="btn btn-outline btn-sm" onclick="openChangelog()" id="clBtn" style="display:none;">📋 Bitácora</button>
+    <button class="btn btn-outline btn-sm" onclick="shareEdit()">🔗 Compartir</button>
+    <button class="btn btn-outline btn-sm" onclick="shareView()" title="URL solo lectura para directivos">👁️ Solo Ver</button>
+    <button class="btn btn-outline btn-sm" onclick="printPDF()">🖨️ PDF</button>
+    <button class="btn btn-accent btn-sm" id="adminBtn" onclick="openAdminLogin()" style="display:none;">🔐 Admin</button>
+  </div>
+</div>
+<div class="gold-bar"></div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('contralor')">📊 Contralor (Contador General)</button>
+  <button class="tab-btn" onclick="switchTab('fiscal')">⚖️ Superintendente de Impuestos <span class="badge-new">NUEVO</span></button>
+</div>
+
+<!-- TAB: CONTRALOR -->
+<div class="tab-panel active" id="tab-contralor">
+<div class="main">
+  <h2 class="print-title">Agenda de Onboarding — Contralor (Contador General)</h2>
+  <div class="admin-bar" id="adminBar-contralor">
+    <span class="admin-badge">✏️ MODO ADMIN</span>
+    <span style="font-size:.8rem;color:#555;">Edición habilitada.</span>
+    <button class="btn btn-ghost btn-sm" onclick="openUsersModal()">👥 Usuarios</button>
+    <button class="btn btn-ghost btn-sm" onclick="openChangePwd()">🔑 Contraseña</button>
+    <button class="btn btn-danger btn-sm" onclick="exitAdmin()">Salir</button>
+  </div>
+  <div id="shareRow-contralor" class="share-row" style="display:none;">
+    <strong style="font-size:.78rem;white-space:nowrap;">🔗 URL compartida:</strong>
+    <span class="share-url" id="shareUrlText-contralor"></span>
+    <button class="btn btn-ghost btn-sm" onclick="doCopy('contralor')">Copiar</button>
+  </div>
+  <div class="progress-card">
+    <h3>📊 Progreso — Contralor (Contador General)</h3>
+    <div class="prog-row"><span id="pct-contralor">0% completado</span><span><strong id="done-contralor">0</strong> de <strong id="total-contralor">0</strong> actividades</span></div>
+    <div class="bar-outer"><div class="bar-inner" id="bar-contralor" style="width:0%"></div></div>
+    <div class="prog-stats"><span><strong>Reporte a:</strong> Director de Administración y Finanzas</span><span><strong>Tipo:</strong> Reemplazo</span></div>
+  </div>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-dir)"></div>Reunión Dirección</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-op)"></div>Reunión Operaciones</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-travel)"></div>Visita a Unidad</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-fiscal)"></div>Fiscal / Externo</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-review)"></div>Revisión / Entregable</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-admin)"></div>Administrativa</div>
+  </div>
+  <div class="week-nav">
+    <button class="week-btn active" onclick="switchWeek('contralor','w1')">Semana 1 — Inmersión y Transferencia</button>
+    <button class="week-btn" onclick="switchWeek('contralor','w2')">Semana 2 — Campo e Integración</button>
+  </div>
+  <div class="week-panel active" id="contralor-w1"></div>
+  <div class="week-panel" id="contralor-w2"></div>
+  <div class="notes-global">
+    <h3>📝 Notas Generales — Contralor</h3>
+    <textarea id="gnote-contralor" placeholder="Observaciones generales, contactos clave, pendientes..." onchange="saveGlobalNote('contralor',this.value)"></textarea>
+  </div>
+</div>
+</div>
+
+<!-- TAB: FISCAL -->
+<div class="tab-panel" id="tab-fiscal">
+<div class="main">
+  <h2 class="print-title">Agenda de Onboarding — Superintendente de Impuestos</h2>
+  <div class="admin-bar" id="adminBar-fiscal">
+    <span class="admin-badge">✏️ MODO ADMIN</span>
+    <span style="font-size:.8rem;color:#555;">Edición habilitada.</span>
+    <button class="btn btn-ghost btn-sm" onclick="openUsersModal()">👥 Usuarios</button>
+    <button class="btn btn-ghost btn-sm" onclick="openChangePwd()">🔑 Contraseña</button>
+    <button class="btn btn-danger btn-sm" onclick="exitAdmin()">Salir</button>
+  </div>
+  <div id="shareRow-fiscal" class="share-row" style="display:none;">
+    <strong style="font-size:.78rem;white-space:nowrap;">🔗 URL compartida:</strong>
+    <span class="share-url" id="shareUrlText-fiscal"></span>
+    <button class="btn btn-ghost btn-sm" onclick="doCopy('fiscal')">Copiar</button>
+  </div>
+  <div class="progress-card">
+    <h3>⚖️ Progreso — Superintendente de Impuestos</h3>
+    <div class="prog-row"><span id="pct-fiscal">0% completado</span><span><strong id="done-fiscal">0</strong> de <strong id="total-fiscal">0</strong> actividades</span></div>
+    <div class="bar-outer"><div class="bar-inner" id="bar-fiscal" style="width:0%"></div></div>
+    <div class="prog-stats"><span><strong>Reporte a:</strong> Director de Administración y Finanzas</span><span><strong>Tipo:</strong> Posición nueva</span></div>
+  </div>
+  <div class="legend">
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-dir)"></div>Reunión Dirección</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-fiscal)"></div>Fiscal / Consultores</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-travel)"></div>Visita a Unidad</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-op)"></div>Reunión Operaciones</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-review)"></div>Revisión / Entregable</div>
+    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-admin)"></div>Administrativa</div>
+  </div>
+  <div class="week-nav">
+    <button class="week-btn active" onclick="switchWeek('fiscal','w1')">Semana 1 — Contexto y Diagnóstico Fiscal</button>
+    <button class="week-btn" onclick="switchWeek('fiscal','w2')">Semana 2 — Campo y Plan Fiscal</button>
+  </div>
+  <div class="week-panel active" id="fiscal-w1"></div>
+  <div class="week-panel" id="fiscal-w2"></div>
+  <div class="notes-global">
+    <h3>📝 Notas Generales — Superintendente de Impuestos</h3>
+    <textarea id="gnote-fiscal" placeholder="Criterios fiscales a validar, contactos externos, pendientes con consultores..." onchange="saveGlobalNote('fiscal',this.value)"></textarea>
+  </div>
+</div>
+</div>
+
+<!-- CHANGELOG PANEL -->
+<div class="changelog-panel" id="changelogPanel">
+  <div class="cl-header">
+    <h3>📋 Bitácora de Cambios</h3>
+    <button class="btn btn-outline btn-sm" onclick="closeChangelog()">✕ Cerrar</button>
+  </div>
+  <div class="cl-filter">
+    <select id="clFilterUser" onchange="renderChangelog()"><option value="">Todos los usuarios</option></select>
+    <select id="clFilterType" onchange="renderChangelog()">
+      <option value="">Todos los tipos</option>
+      <option value="check">✅ Completado</option>
+      <option value="uncheck">🔲 Desmarcado</option>
+      <option value="note">📝 Nota</option>
+      <option value="edit">✏️ Edición</option>
+      <option value="add">➕ Agregado</option>
+      <option value="delete">🗑️ Eliminado</option>
+      <option value="gnote">📄 Nota general</option>
+    </select>
+  </div>
+  <div class="cl-body" id="clBody"><div class="cl-empty">Cargando bitácora...</div></div>
+</div>
+
+<!-- ======== MODALES ======== -->
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay open" id="authModal">
+  <div class="modal">
+    <div style="text-align:center;margin-bottom:14px;">
+      <div style="font-size:2rem;">⛏️</div>
+      <h2 style="margin-bottom:2px;">Minera Río Tinto</h2>
+      <p style="font-size:.78rem;color:var(--muted);">Agenda de Onboarding — Acceso de colaboradores</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login')" id="authTab-login">Iniciar Sesión</button>
+      <button class="auth-tab" onclick="switchAuthTab('register')" id="authTab-register">Registrarse</button>
+    </div>
+    <!-- LOGIN -->
+    <div class="auth-panel active" id="authPanel-login">
+      <label>Usuario (alias)</label>
+      <input type="text" id="loginAlias" placeholder="Tu nombre de usuario" autocomplete="username">
+      <label>Contraseña</label>
+      <input type="password" id="loginPwd" placeholder="Tu contraseña" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+      <div class="modal-error" id="loginError">Usuario o contraseña incorrectos.</div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" style="width:100%;" onclick="doLogin()">Entrar</button>
+      </div>
+    </div>
+    <!-- REGISTER -->
+    <div class="auth-panel" id="authPanel-register">
+      <label>Nombre completo</label>
+      <input type="text" id="regName" placeholder="Ej: Juan Pérez">
+      <label>Correo electrónico</label>
+      <input type="email" id="regEmail" placeholder="correo@empresa.com">
+      <label>Alias (nombre de usuario)</label>
+      <input type="text" id="regAlias" placeholder="Sin espacios, ej: jperez">
+      <label>Contraseña</label>
+      <input type="password" id="regPwd" placeholder="Mínimo 6 caracteres" onkeydown="if(event.key==='Enter')doRegister()">
+      <div class="modal-error" id="regError">Error al registrar. Verifica los datos.</div>
+      <div class="modal-success" id="regSuccess">¡Registrado! Ahora puedes iniciar sesión.</div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" style="width:100%;" onclick="doRegister()">Crear cuenta</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN LOGIN MODAL -->
+<div class="modal-overlay" id="adminLoginModal">
+  <div class="modal">
+    <h2>🔐 Acceso de Administrador</h2>
+    <p style="font-size:.8rem;color:var(--muted);">El modo admin permite editar la agenda, gestionar usuarios y ver la bitácora completa.</p>
+    <label>Contraseña de administrador</label>
+    <input type="password" id="adminPwdInput" placeholder="Contraseña admin" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    <div class="modal-error" id="adminLoginError">Contraseña incorrecta.</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('adminLoginModal')">Cancelar</button>
+      <button class="btn btn-accent" onclick="doAdminLogin()">Ingresar como Admin</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHANGE PWD MODAL -->
+<div class="modal-overlay" id="pwdModal">
+  <div class="modal">
+    <h2>🔑 Cambiar Contraseña Admin</h2>
+    <label>Contraseña actual</label><input type="password" id="pwdCurrent">
+    <label>Nueva contraseña</label><input type="password" id="pwdNew">
+    <label>Confirmar</label><input type="password" id="pwdConfirm">
+    <div class="modal-error" id="pwdError">Las contraseñas no coinciden o la actual es incorrecta.</div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('pwdModal')">Cancelar</button>
+      <button class="btn btn-success" onclick="changePwd()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT ACTIVITY MODAL -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal">
+    <h2>✏️ Editar Actividad</h2>
+    <input type="hidden" id="editActId">
+    <label>Horario</label><input type="text" id="editTime" placeholder="Ej: 09:00 – 11:00 hrs">
+    <label>Tipo</label>
+    <select id="editTag">
+      <option value="dir">Reunión Dirección</option><option value="op">Reunión Operaciones</option>
+      <option value="travel">Visita a Unidad</option><option value="fiscal">Fiscal / Externo</option>
+      <option value="review">Revisión / Entregable</option><option value="admin">Administrativa</option>
+    </select>
+    <label>Título</label><input type="text" id="editTitle">
+    <label>Descripción</label><textarea id="editDetail"></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('editModal')">Cancelar</button>
+      <button class="btn btn-danger btn-sm" onclick="deleteActivity()">Eliminar</button>
+      <button class="btn btn-success" onclick="saveActivityEdit()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD ACTIVITY MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h2>➕ Agregar Actividad</h2>
+    <input type="hidden" id="addDayId">
+    <label>Horario</label><input type="text" id="addTime" placeholder="Ej: 10:00 – 11:30 hrs">
+    <label>Tipo</label>
+    <select id="addTag">
+      <option value="dir">Reunión Dirección</option><option value="op">Reunión Operaciones</option>
+      <option value="travel">Visita a Unidad</option><option value="fiscal">Fiscal / Externo</option>
+      <option value="review">Revisión / Entregable</option><option value="admin">Administrativa</option>
+    </select>
+    <label>Título</label><input type="text" id="addTitle">
+    <label>Descripción</label><textarea id="addDetail"></textarea>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('addModal')">Cancelar</button>
+      <button class="btn btn-success" onclick="saveNewActivity()">Agregar</button>
+    </div>
+  </div>
+</div>
+
+<!-- USERS MODAL -->
+<div class="modal-overlay" id="usersModal">
+  <div class="modal" style="max-width:540px;">
+    <h2>👥 Usuarios Registrados</h2>
+    <div id="usersListContainer"><div style="color:var(--muted);font-size:.82rem;padding:10px 0;">Cargando usuarios...</div></div>
+    <div class="modal-footer"><button class="btn btn-ghost" onclick="closeModal('usersModal')">Cerrar</button></div>
+  </div>
+</div>
+
+<!-- USER MENU MODAL -->
+<div class="modal-overlay" id="userMenuModal">
+  <div class="modal" style="max-width:320px;">
+    <h2 id="umTitle">Mi cuenta</h2>
+    <div id="umInfo" style="font-size:.82rem;color:var(--muted);margin-bottom:14px;"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('userMenuModal')">Cancelar</button>
+      <button class="btn btn-danger" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==========================================
+// AGENDA DATA
+// ==========================================
+const TAG_LABELS={dir:'Reunión Dirección',op:'Reunión Operaciones',travel:'Visita a Unidad',fiscal:'Fiscal / Externo',review:'Revisión / Entregable',admin:'Administrativa'};
+
+const AGENDA_DATA={
+  contralor:{
+    w1:[
+      {id:'cc-d1',num:1,title:'Lunes — Día 1 | Bienvenida y Alineación Ejecutiva',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
+        {id:'cc-d1-a1',time:'08:00 – 09:00',tag:'admin',title:'Alta administrativa y entrega de accesos',detail:'Firma de contrato, credencial, acceso a SAP Business One, correo corporativo y acceso a instalaciones.'},
+        {id:'cc-d1-a2',time:'09:00 – 11:00',tag:'dir',title:'Reunión de bienvenida — Director de Administración y Finanzas',detail:'Contexto del negocio y crecimiento acelerado MRT. Visión del puesto: transformación, no mantenimiento. Objetivo: información financiera confiable y oportuna. Meta 6 meses: cierre ≤5 días hábiles, consolidación ≤8. Equipo directo 4 personas. Prioridades inmediatas.'},
+        {id:'cc-d1-a3',time:'11:00 – 12:00',tag:'admin',title:'Recorrido corporativo y presentación con equipo de Finanzas',detail:'Conocer al equipo de 4 personas. Entender roles, cargas de trabajo y dinámicas del área.'},
+        {id:'cc-d1-a4',time:'13:00 – 15:00',tag:'dir',title:'Sesión con Contador General saliente — Presentación general del área',detail:'Estructura actual del área contable. Situación del cierre mensual: tiempos y cuellos de botella. Estado de EEFF consolidados vs. por unidad. Debilidades de control interno. Relación con áreas operativas.'},
+        {id:'cc-d1-a5',time:'15:30 – 17:30',tag:'review',title:'Lectura de DPs, organigrama y estructura corporativa',detail:'Revisión del descriptivo de puesto, relaciones de reporte y límites con FP&A / CFO.'},
+        {id:'cc-d1-a6',time:'17:30 – 18:00',tag:'review',title:'Cierre del día — Registro de dudas y plan para Día 2',detail:'Documentar 3-5 preguntas clave. Confirmar agenda Día 2 con Contador General saliente.'}
+      ]},
+      {id:'cc-d2',num:2,title:'Martes — Día 2 | Transferencia: Procesos y Sistemas',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
+        {id:'cc-d2-a1',time:'08:00 – 11:00',tag:'dir',title:'Sesión con Contador General saliente — Proceso de Cierre Contable',detail:'Proceso completo de cierre mes a mes. Check list existente (o ausencia). Tiempos actuales vs. meta ≤5 días. Cuellos de botella. Conciliaciones críticas: bancos, inventarios, costos, intercompañía. Ajustes posteriores más frecuentes.'},
+        {id:'cc-d2-a2',time:'11:00 – 13:00',tag:'dir',title:'Sesión con Contador General saliente — ERP SAP Business One',detail:'Walkthrough de SAP Business One: módulos activos. Catálogo de cuentas y centros de costo. Integración ERP con operación. Reportes disponibles. Limitaciones del sistema. Accesos y controles.'},
+        {id:'cc-d2-a3',time:'14:00 – 16:00',tag:'review',title:'Revisión de últimos 3 estados financieros mensuales',detail:'Análisis de EEFF recientes: estructura, calidad, ajustes post-cierre y variaciones. Identificar inconsistencias y áreas de mejora.'},
+        {id:'cc-d2-a4',time:'16:00 – 18:00',tag:'review',title:'Revisión de obligaciones fiscales y calendario de cumplimiento',detail:'Calendario fiscal del ejercicio (ISR, IVA, IMSS, INFONAVIT). Estado actual de declaraciones. Última opinión de cumplimiento SAT. Relación con asesores fiscales externos.'}
+      ]},
+      {id:'cc-d3',num:3,title:'Miércoles — Día 3 | Costos, Control Interno y Auditoría',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
+        {id:'cc-d3-a1',time:'08:00 – 10:30',tag:'dir',title:'Sesión con Contador General saliente — Costos OPEX y CAPEX',detail:'Estructura de costos operativos por unidad. Proceso de revisión de costos con operación. CAPEX aprobados y en seguimiento. Control de inventarios. Variaciones recientes. Interacción con administradores de unidad.'},
+        {id:'cc-d3-a2',time:'10:30 – 12:30',tag:'dir',title:'Sesión con Contador General saliente — Control Interno y CxP',detail:'Controles internos existentes. Proceso three-way match. CxP: aprobación, programación y pago. Contratos y condiciones vigentes. Debilidades de control pendientes. Relación con Legal y Compras.'},
+        {id:'cc-d3-a3',time:'13:30 – 15:30',tag:'fiscal',title:'Reunión con Auditor Externo / revisión de papeles de trabajo',detail:'Estado de la auditoría externa, hallazgos recientes, observaciones pendientes y comunicaciones abiertas.'},
+        {id:'cc-d3-a4',time:'15:30 – 17:00',tag:'review',title:'Revisión de reportes financieros actuales enviados a Dirección',detail:'Analizar formato, contenido y oportunidad. Identificar brechas vs. necesidades de Dirección.'},
+        {id:'cc-d3-a5',time:'17:00 – 18:00',tag:'dir',title:'Check-in con Director de Administración y Finanzas',detail:'Revisión rápida de hallazgos de los primeros 3 días. Alineación y ajuste de agenda si es necesario.'}
+      ]},
+      {id:'cc-d4',num:4,title:'Jueves — Día 4 | Reuniones con Administradores de Unidad',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
+        {id:'cc-d4-a1',time:'08:30 – 10:00',tag:'op',title:'Reunión con Administrador de Unidad — Cieneguita',detail:'Ciclo de reporte de costos e inventarios. Principales partidas de costo. Flujos de información a Finanzas. Problemas frecuentes con Contabilidad corporativa. CAPEX en ejecución.'},
+        {id:'cc-d4-a2',time:'10:00 – 11:30',tag:'op',title:'Reunión con Administrador de Unidad — Matamoros',detail:'Misma agenda que Cieneguita. Particularidades: tipo de operación, escala, complejidad de costos y estado de reporteo.'},
+        {id:'cc-d4-a3',time:'12:00 – 13:30',tag:'op',title:'Reunión con Administrador de Unidad — Minas Olivos / Realito',detail:'Misma agenda base. ¿Consolidan juntas o separadas? ¿Cómo fluye el reporte de ambas?'},
+        {id:'cc-d4-a4',time:'14:30 – 16:00',tag:'op',title:'Reunión con responsable de Proyecto Namiquipa',detail:'Estado del proyecto y CAPEX autorizado vs. ejercido. Estructura de costos de desarrollo vs. operación. Integración con consolidación corporativa.'},
+        {id:'cc-d4-a5',time:'16:00 – 18:00',tag:'review',title:'Síntesis: mapa de flujos de información financiera',detail:'Documentar cómo fluye información de cada unidad a Finanzas corporativo. Identificar brechas y oportunidades de mejora.'}
+      ]},
+      {id:'cc-d5',num:5,title:'Viernes — Día 5 | Cierre Semana 1 + Entregable Inicial',loc:'Sede corporativa Chihuahua | 8:00 – 17:00 hrs',acts:[
+        {id:'cc-d5-a1',time:'08:00 – 10:00',tag:'dir',title:'Sesión con Contador General saliente — Temas pendientes',detail:'Resolver dudas. Revisar archivos y documentos clave. Inventario de lo documentado vs. conocimiento tácito.'},
+        {id:'cc-d5-a2',time:'10:00 – 13:00',tag:'review',title:'Elaboración: Diagnóstico inicial de la función contable (borrador)',detail:'Estado del cierre, control interno, sistemas, costos y relación con unidades. Base para plan de acción a 30 días.'},
+        {id:'cc-d5-a3',time:'14:00 – 16:00',tag:'dir',title:'Presentación de cierre Semana 1 al Director de Administración y Finanzas',detail:'Diagnóstico inicial, hallazgos clave, riesgos y prioridades propuestas. Alineación para Semana 2.'},
+        {id:'cc-d5-a4',time:'16:00 – 17:00',tag:'admin',title:'Logística Semana 2: confirmar viajes y agenda de visitas',detail:'Confirmar traslados, hospedaje y contactos en: Cieneguita, Matamoros, Minas Olivos y Realito, Proyecto Namiquipa.'}
+      ]}
+    ],
+    w2:[
+      {id:'cc-d6',num:6,title:'Lunes — Día 6 | Visita a Unidad Cieneguita',loc:'Unidad Cieneguita | Día completo',acts:[
+        {id:'cc-d6-a1',time:'Mañana',tag:'travel',title:'Recorrido operativo — Cieneguita',detail:'Recorrido físico (mina, planta, almacenes). Ciclo de producción y su impacto en costos. Control de inventarios en sitio. Registro de consumibles, explosivos, energía. Equipo administrativo local.'},
+        {id:'cc-d6-a2',time:'Tarde',tag:'op',title:'Mesa de trabajo Finanzas–Operación — Cieneguita',detail:'Proceso de cierre y reporte a corporativo. Frecuencia y calidad del reporte actual. Problemas con impacto financiero. Conciliaciones pendientes. CAPEX en ejecución. Necesidades de mejora.'}
+      ]},
+      {id:'cc-d7',num:7,title:'Martes — Día 7 | Visita a Unidad Matamoros',loc:'Unidad Matamoros | Día completo',acts:[
+        {id:'cc-d7-a1',time:'Mañana',tag:'travel',title:'Recorrido operativo — Matamoros',detail:'Mismo enfoque que Cieneguita. Diferencias operativas y financieras. Escala y particularidades de la unidad.'},
+        {id:'cc-d7-a2',time:'Tarde',tag:'op',title:'Mesa de trabajo Finanzas–Operación — Matamoros',detail:'Mismo esquema que Cieneguita. Énfasis en desviaciones de costo recientes, causa raíz y estado de contratistas.'}
+      ]},
+      {id:'cc-d8',num:8,title:'Miércoles — Día 8 | Visita a Minas Olivos y Realito',loc:'Unidades Olivos / Realito | Día completo',acts:[
+        {id:'cc-d8-a1',time:'Mañana — Olivos',tag:'travel',title:'Recorrido y mesa de trabajo — Minas Olivos',detail:'Determinar si consolida separado o junto con Realito. Flujo del reporte de costos.'},
+        {id:'cc-d8-a2',time:'Tarde — Realito',tag:'travel',title:'Recorrido y mesa de trabajo — Realito',detail:'Estado de Realito: madura, en desarrollo o en cierre. Implicaciones contables específicas.'}
+      ]},
+      {id:'cc-d9',num:9,title:'Jueves — Día 9 | Visita Proyecto Namiquipa + Regreso',loc:'Proyecto Namiquipa | Medio día + regreso',acts:[
+        {id:'cc-d9-a1',time:'Mañana',tag:'travel',title:'Visita a Proyecto Namiquipa — Finanzas del proyecto',detail:'Estado de avance y CAPEX autorizado vs. ejercido. Tratamiento contable de exploración/desarrollo. Contratos activos. Integración a EEFF consolidados.'},
+        {id:'cc-d9-a2',time:'Tarde (en tránsito)',tag:'review',title:'Consolidación de notas de visitas de campo',detail:'Organizar hallazgos de las 4 unidades: consistencias, riesgos de control y oportunidades de mejora.'}
+      ]},
+      {id:'cc-d10',num:10,title:'Viernes — Día 10 | Integración Final y Plan de Acción 30 días',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
+        {id:'cc-d10-a1',time:'08:00 – 11:00',tag:'review',title:'Elaboración: Plan de acción primeros 30 días',detail:'3 prioridades: estabilizar cierre, eliminar cuellos de botella críticos, primer reporte financiero estándar.'},
+        {id:'cc-d10-a2',time:'11:00 – 12:00',tag:'dir',title:'Sesión final con Contador General saliente — Cierre de transferencia',detail:'Confirmar temas cubiertos, pendientes, contactos clave y fechas críticas (cierres, declaraciones, auditorías).'},
+        {id:'cc-d10-a3',time:'14:00 – 16:30',tag:'dir',title:'Presentación de cierre de 2 semanas al Director de Administración y Finanzas',detail:'Diagnóstico actual. Mapa de flujos por unidad. Top 5 riesgos. Plan de acción 30 días con KPIs. Necesidades de acceso y habilitadores.'},
+        {id:'cc-d10-a4',time:'16:30 – 18:00',tag:'admin',title:'Formalización del inicio de operación del puesto',detail:'Confirmar accesos. Definir agenda de primeras reuniones operativas. Comunicar directrices al equipo.'}
+      ]}
+    ]
+  },
+  fiscal:{
+    w1:[
+      {id:'ff-d1',num:1,title:'Lunes — Día 1 | Bienvenida y Alineación Estratégica',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
+        {id:'ff-d1-a1',time:'08:00 – 09:00',tag:'admin',title:'Alta administrativa y entrega de accesos',detail:'Firma de contrato, credencial, correo corporativo, acceso a SAP Business One e instalaciones.'},
+        {id:'ff-d1-a2',time:'09:00 – 11:30',tag:'dir',title:'Reunión estratégica de bienvenida — Director de Administración y Finanzas',detail:'Por qué existe la posición. Objetivo: cero contingencias fiscales materiales. Éxito 6 meses: diagnóstico + Plan Fiscal Corporativo. Alcance grupal. Autoridad fiscal. Relación con Contralor.'},
+        {id:'ff-d1-a3',time:'11:30 – 12:30',tag:'admin',title:'Presentación con equipo de Finanzas y Contabilidad',detail:'Quién hace qué en materia fiscal hoy. Punto de handoff de responsabilidades.'},
+        {id:'ff-d1-a4',time:'13:30 – 15:30',tag:'dir',title:'Sesión con Contador General saliente — Estado fiscal actual',detail:'Calendario fiscal del grupo. Estado de cumplimiento (ISR, IVA, IMSS, INFONAVIT, Minería). Última opinión SAT. Saldos a favor. Procesos a transferir.'},
+        {id:'ff-d1-a5',time:'15:30 – 17:30',tag:'review',title:'Revisión de documentación fiscal básica',detail:'RFC de cada entidad, última declaración anual, declaraciones mensuales recientes de IVA, acuse de opinión SAT.'}
+      ]},
+      {id:'ff-d2',num:2,title:'Martes — Día 2 | Sesión con Consultores Fiscales — Parte 1',loc:'Sede corporativa / oficina consultores | 9:00 – 18:00 hrs',acts:[
+        {id:'ff-d2-a1',time:'09:00 – 12:00',tag:'fiscal',title:'Sesión 1 con Consultores Fiscales — Estrategia fiscal actual del grupo',detail:'Estructura fiscal corporativa actual. Estrategias de optimización vigentes. Criterios fiscales adoptados (ISR, IVA, regímenes). Figuras fiscales en uso. Regímenes especiales de minería. Beneficios del sector. Interacción actual con SAT.'},
+        {id:'ff-d2-a2',time:'13:00 – 16:00',tag:'fiscal',title:'Sesión 1 (cont.) — Contingencias y expedientes abiertos',detail:'Contingencias fiscales identificadas y cuantificación. Expedientes de auditoría SAT en proceso. Diferencias de criterio pendientes. Cartas de requerimiento y estrategia de respuesta. Provisiones contables.'},
+        {id:'ff-d2-a3',time:'16:00 – 17:30',tag:'review',title:'Revisión de declaraciones anuales y provisiones fiscales',detail:'Declaración anual más reciente. ISR provisional vs. anual. Diferencias contable-fiscal (PTU, pérdidas).'}
+      ]},
+      {id:'ff-d3',num:3,title:'Miércoles — Día 3 | Sesión con Consultores Fiscales — Parte 2',loc:'Sede corporativa / oficina consultores | 9:00 – 18:00 hrs',acts:[
+        {id:'ff-d3-a1',time:'09:00 – 12:00',tag:'fiscal',title:'Sesión 2 — Precios de Transferencia e Intercompañía',detail:'Operaciones intercompañía y tratamiento fiscal. Estudio de precios de transferencia vigente. Cumplimiento DISIF. Riesgos en operaciones intercompañía.'},
+        {id:'ff-d3-a2',time:'13:00 – 15:30',tag:'fiscal',title:'Sesión 2 (cont.) — Proyectos de inversión: impacto fiscal',detail:'Tratamiento fiscal de nuevos proyectos (Namiquipa). Estructuración fiscal para expansión. Implicaciones de CAPEX y deducibilidad. Deducción inmediata. Impacto fiscal de contratos con contratistas.'},
+        {id:'ff-d3-a3',time:'15:30 – 17:00',tag:'dir',title:'Alineación con Director de Adm. y Finanzas — Cierre con consultores',detail:'Hallazgos de sesiones con consultores. Temas que requieren decisión ejecutiva. Definir continuidad con consultores.'}
+      ]},
+      {id:'ff-d4',num:4,title:'Jueves — Día 4 | Reuniones Internas con Áreas Relacionadas',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
+        {id:'ff-d4-a1',time:'08:30 – 10:00',tag:'op',title:'Reunión con Contralor — Interfaz contable-fiscal',detail:'Cómo se produce la información contable para la función fiscal. Conciliación contable-fiscal. Determinación de impuestos sobre base contable. Provisiones en EEFF. Flujo de trabajo entre Contraloría y función fiscal.'},
+        {id:'ff-d4-a2',time:'10:00 – 11:30',tag:'op',title:'Reunión con Compras / Legal — Validación fiscal de contratos',detail:'Proceso de revisión fiscal de contratos. Contratos con implicaciones fiscales relevantes. Proceso de validación 69-B SAT. Retenciones aplicables.'},
+        {id:'ff-d4-a3',time:'11:30 – 13:00',tag:'op',title:'Reunión con Recursos Humanos — Implicaciones fiscales laborales',detail:'Esquemas de nómina y tratamiento fiscal. Prestaciones con tratamiento especial. Cumplimiento IMSS/INFONAVIT. Contratistas vs. empleados. PTU.'},
+        {id:'ff-d4-a4',time:'14:00 – 16:00',tag:'review',title:'Revisión de saldos a favor y oportunidades de recuperación',detail:'Saldos a favor de IVA susceptibles de devolución o compensación. Impacto estimado en flujo de efectivo.'},
+        {id:'ff-d4-a5',time:'16:00 – 18:00',tag:'review',title:'Revisión de estructura del grupo — Entidades, RFC e intercompañía',detail:'Mapear entidades legales del grupo, RFC, regímenes fiscales y operaciones entre ellas. Base para diagnóstico fiscal.'}
+      ]},
+      {id:'ff-d5',num:5,title:'Viernes — Día 5 | Cierre Semana 1 + Inicio del Diagnóstico',loc:'Sede corporativa Chihuahua | 8:00 – 17:00 hrs',acts:[
+        {id:'ff-d5-a1',time:'08:00 – 11:00',tag:'review',title:'Elaboración del borrador de Diagnóstico Fiscal Integral',detail:'Estado de cumplimiento por impuesto y entidad. Contingencias y cuantificación. Oportunidades de optimización. Saldos recuperables. Riesgos de precios de transferencia. Brechas vs. mejores prácticas del sector.'},
+        {id:'ff-d5-a2',time:'11:00 – 12:00',tag:'admin',title:'Logística Semana 2 — Confirmar visitas a unidades',detail:'Confirmar agenda de campo: Cieneguita, Matamoros, Minas Olivos y Realito, Proyecto Namiquipa.'},
+        {id:'ff-d5-a3',time:'13:00 – 15:00',tag:'dir',title:'Presentación de cierre Semana 1 al Director de Adm. y Finanzas',detail:'Avance del diagnóstico, hallazgos de mayor impacto, agenda confirmada semana 2, información adicional requerida.'}
+      ]}
+    ],
+    w2:[
+      {id:'ff-d6',num:6,title:'Lunes — Día 6 | Visita a Unidad Cieneguita',loc:'Unidad Cieneguita | Día completo',acts:[
+        {id:'ff-d6-a1',time:'Mañana',tag:'travel',title:'Recorrido operativo — Cieneguita',detail:'Volúmenes, insumos, contratistas y bienes que generan cargas fiscales. Contexto para evaluación fiscal de la unidad.'},
+        {id:'ff-d6-a2',time:'Tarde',tag:'op',title:'Mesa fiscal con Administrador de Unidad — Cieneguita',detail:'Proveedores y contratistas: ¿CFDI correcto? Compras sin CFDI. Gastos no deducibles. Impuesto especial de minería. Tratamiento fiscal de pasivos ambientales.'}
+      ]},
+      {id:'ff-d7',num:7,title:'Martes — Día 7 | Visita a Unidad Matamoros',loc:'Unidad Matamoros | Día completo',acts:[
+        {id:'ff-d7-a1',time:'Mañana',tag:'travel',title:'Recorrido operativo — Matamoros',detail:'Mismo enfoque que Cieneguita. Particularidades operativas con impacto fiscal.'},
+        {id:'ff-d7-a2',time:'Tarde',tag:'op',title:'Mesa fiscal con Administrador de Unidad — Matamoros',detail:'Misma agenda fiscal. Diferencias y particulares de Matamoros en CFDI y operaciones locales.'}
+      ]},
+      {id:'ff-d8',num:8,title:'Miércoles — Día 8 | Visita a Minas Olivos y Realito',loc:'Unidades Olivos / Realito | Día completo',acts:[
+        {id:'ff-d8-a1',time:'Mañana — Olivos',tag:'travel',title:'Recorrido y mesa fiscal — Minas Olivos',detail:'¿Opera bajo la misma entidad legal que Realito? Implicaciones en ingresos y deducciones.'},
+        {id:'ff-d8-a2',time:'Tarde — Realito',tag:'travel',title:'Recorrido y mesa fiscal — Realito',detail:'Confirmar entidad legal, RFC y régimen fiscal. Transacciones intercompañía específicas.'}
+      ]},
+      {id:'ff-d9',num:9,title:'Jueves — Día 9 | Visita Proyecto Namiquipa + Regreso',loc:'Proyecto Namiquipa | Medio día + regreso',acts:[
+        {id:'ff-d9-a1',time:'Mañana',tag:'travel',title:'Visita a Proyecto Namiquipa — Análisis fiscal',detail:'Entidad legal y RFC. Tratamiento fiscal de exploración y desarrollo. Contratos: retenciones y comprobación. IVA acreditable en etapa de inversión. Importación de bienes de capital.'},
+        {id:'ff-d9-a2',time:'Tarde (en tránsito)',tag:'review',title:'Consolidación de hallazgos fiscales de campo',detail:'Integrar observaciones de 4 unidades. Riesgos recurrentes vs. específicos por unidad.'}
+      ]},
+      {id:'ff-d10',num:10,title:'Viernes — Día 10 | Diagnóstico Fiscal + Plan Fiscal Corporativo',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
+        {id:'ff-d10-a1',time:'08:00 – 11:00',tag:'review',title:'Finalización del Diagnóstico Fiscal Integral',detail:'Incorporar hallazgos de campo. Cuantificar contingencias y oportunidades. 3 prioridades del Plan Fiscal Corporativo año 1.'},
+        {id:'ff-d10-a2',time:'11:00 – 12:00',tag:'fiscal',title:'Validación del diagnóstico con Consultores Fiscales (teleconferencia)',detail:'Confirmar alineación con visión externa. Ajustar criterios si hay discrepancia.'},
+        {id:'ff-d10-a3',time:'14:00 – 16:30',tag:'dir',title:'Presentación ejecutiva al Director de Administración y Finanzas',detail:'Diagnóstico Fiscal Integral. Mapa de contingencias cuantificadas. Oportunidades de optimización. Plan Fiscal Corporativo año 1. KPIs propuestos. Modelo con consultores externos.'},
+        {id:'ff-d10-a4',time:'16:30 – 18:00',tag:'admin',title:'Formalización del inicio de operación — Calendario fiscal 30 días',detail:'Primeras obligaciones fiscales a atender. Rutina de revisión con Contraloría. Comunicar nuevo esquema de trabajo fiscal.'}
+      ]}
+    ]
+  }
+};
+
+// ==========================================
+// ROOM & MODE SETUP
+// ==========================================
+let roomId = window.location.hash.slice(1);
+if(!roomId || roomId.length < 4){ roomId='mrt-'+Math.random().toString(36).substr(2,8); window.location.hash=roomId; }
+
+const urlParams = new URLSearchParams(window.location.search);
+const isViewOnly = urlParams.get('view')==='1';
+
+if(isViewOnly){
+  document.body.classList.add('view-only');
+  document.getElementById('viewBanner').style.display='flex';
+  document.getElementById('authModal').classList.remove('open');
+}
+
+// ==========================================
+// GUN SETUP
+// ==========================================
+let gun, room, gunReady=false;
+try{
+  gun=Gun({peers:['https://peer.wallie.io/gun']});
+  room=gun.get('mrt-onboarding-'+roomId);
+  gunReady=true;
+  document.getElementById('syncDot').classList.add('live');
+  document.getElementById('syncLabel').textContent='En línea';
+}catch(e){ document.getElementById('syncLabel').textContent='Sin red (local)'; }
+
+// ==========================================
+// STATE
+// ==========================================
+let currentUser=null; // {alias,name,email,role}
+let adminMode=false;
+let adminPwd=localStorage.getItem('mrt_admin_pwd_'+roomId)||'MRT2026';
+let overrides={}, deletedActs={}, extraActs={}, checkState={}, noteState={}, globalNotes={};
+let changelogEntries=[];
+
+function loadLocal(){
+  try{
+    checkState=JSON.parse(localStorage.getItem('mrt_checks_'+roomId)||'{}');
+    noteState=JSON.parse(localStorage.getItem('mrt_notes_'+roomId)||'{}');
+    overrides=JSON.parse(localStorage.getItem('mrt_overrides_'+roomId)||'{}');
+    deletedActs=JSON.parse(localStorage.getItem('mrt_deleted_'+roomId)||'{}');
+    extraActs=JSON.parse(localStorage.getItem('mrt_extra_'+roomId)||'{}');
+    globalNotes=JSON.parse(localStorage.getItem('mrt_gnotes_'+roomId)||'{}');
+    adminPwd=localStorage.getItem('mrt_admin_pwd_'+roomId)||'MRT2026';
+    const savedUser=sessionStorage.getItem('mrt_user_'+roomId);
+    if(savedUser) currentUser=JSON.parse(savedUser);
+  }catch(e){}
+}
+
+function saveLocal(){
+  try{
+    localStorage.setItem('mrt_checks_'+roomId,JSON.stringify(checkState));
+    localStorage.setItem('mrt_notes_'+roomId,JSON.stringify(noteState));
+    localStorage.setItem('mrt_overrides_'+roomId,JSON.stringify(overrides));
+    localStorage.setItem('mrt_deleted_'+roomId,JSON.stringify(deletedActs));
+    localStorage.setItem('mrt_extra_'+roomId,JSON.stringify(extraActs));
+    localStorage.setItem('mrt_gnotes_'+roomId,JSON.stringify(globalNotes));
+  }catch(e){}
+}
+
+// ==========================================
+// HASH (simple, client-side)
+// ==========================================
+async function hashPwd(pwd){
+  const msgBuf=new TextEncoder().encode('mrt2026-salt-'+pwd);
+  const hashBuf=await crypto.subtle.digest('SHA-256',msgBuf);
+  return Array.from(new Uint8Array(hashBuf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+// ==========================================
+// AUTH
+// ==========================================
+function switchAuthTab(tab){
+  ['login','register'].forEach(t=>{
+    document.getElementById('authTab-'+t).classList.toggle('active',t===tab);
+    document.getElementById('authPanel-'+t).classList.toggle('active',t===tab);
+  });
+}
+
+async function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const alias=document.getElementById('regAlias').value.trim().toLowerCase().replace(/\s+/g,'');
+  const pwd=document.getElementById('regPwd').value;
+  const errEl=document.getElementById('regError');
+  const okEl=document.getElementById('regSuccess');
+  errEl.style.display='none'; okEl.style.display='none';
+  if(!name||!email||!alias||pwd.length<6){ errEl.textContent='Completa todos los campos. Contraseña mínimo 6 caracteres.'; errEl.style.display='block'; return; }
+  if(!/^[a-z0-9_-]+$/.test(alias)){ errEl.textContent='El alias solo puede tener letras, números, guiones.'; errEl.style.display='block'; return; }
+  const pwdHash=await hashPwd(pwd);
+  // Check if alias exists
+  if(gunReady){
+    room.get('users').get(alias).once(existing=>{
+      if(existing && existing.pwdHash){ errEl.textContent='Ese alias ya está en uso. Elige otro.'; errEl.style.display='block'; return; }
+      room.get('users').get(alias).put({name,email,alias,pwdHash,role:'user',ts:Date.now()});
+      okEl.style.display='block';
+      setTimeout(()=>switchAuthTab('login'),1200);
+    });
+  } else {
+    // Offline register - store locally
+    const users=JSON.parse(localStorage.getItem('mrt_users_'+roomId)||'{}');
+    if(users[alias]){ errEl.textContent='Alias ya en uso.'; errEl.style.display='block'; return; }
+    users[alias]={name,email,alias,pwdHash,role:'user',ts:Date.now()};
+    localStorage.setItem('mrt_users_'+roomId,JSON.stringify(users));
+    okEl.style.display='block';
+    setTimeout(()=>switchAuthTab('login'),1200);
+  }
+}
+
+async function doLogin(){
+  const alias=document.getElementById('loginAlias').value.trim().toLowerCase();
+  const pwd=document.getElementById('loginPwd').value;
+  const errEl=document.getElementById('loginError');
+  errEl.style.display='none';
+  if(!alias||!pwd){ errEl.textContent='Ingresa usuario y contraseña.'; errEl.style.display='block'; return; }
+  const pwdHash=await hashPwd(pwd);
+  function finishLogin(userData){
+    if(!userData||userData.pwdHash!==pwdHash){ errEl.style.display='block'; return; }
+    currentUser={alias:userData.alias,name:userData.name,email:userData.email,role:userData.role||'user'};
+    sessionStorage.setItem('mrt_user_'+roomId,JSON.stringify(currentUser));
+    closeModal('authModal');
+    updateUserUI();
+    loadChangelogFromGun();
+  }
+  if(gunReady){
+    room.get('users').get(alias).once(ud=>{ if(ud){ finishLogin(ud); } else { errEl.style.display='block'; } });
+  } else {
+    const users=JSON.parse(localStorage.getItem('mrt_users_'+roomId)||'{}');
+    finishLogin(users[alias]);
+  }
+}
+
+function doLogout(){
+  currentUser=null;
+  adminMode=false;
+  sessionStorage.removeItem('mrt_user_'+roomId);
+  closeModal('userMenuModal');
+  updateUserUI();
+  document.getElementById('authModal').classList.add('open');
+  document.getElementById('loginAlias').value='';
+  document.getElementById('loginPwd').value='';
+  applyAdminMode();
+}
+
+function updateUserUI(){
+  const chip=document.getElementById('userChip');
+  const adminBtn=document.getElementById('adminBtn');
+  const clBtn=document.getElementById('clBtn');
+  if(currentUser){
+    chip.style.display='flex';
+    document.getElementById('userAvatar').textContent=currentUser.name.split(' ').map(w=>w[0]).join('').substr(0,2).toUpperCase();
+    document.getElementById('userNameLabel').textContent=currentUser.name.split(' ')[0];
+    adminBtn.style.display='inline-flex';
+    clBtn.style.display='inline-flex';
+    // Enable inputs
+    document.querySelectorAll('.act-check input,.act-note textarea,.notes-global textarea').forEach(el=>el.disabled=false);
+  } else {
+    chip.style.display='none';
+    adminBtn.style.display='none';
+    clBtn.style.display='none';
+  }
+}
+
+function openUserMenu(){
+  if(!currentUser) return;
+  document.getElementById('umTitle').textContent=currentUser.name;
+  document.getElementById('umInfo').innerHTML=`<strong>Alias:</strong> ${currentUser.alias}<br><strong>Email:</strong> ${currentUser.email}<br><strong>Rol:</strong> ${currentUser.role==='admin'?'Administrador':'Colaborador'}`;
+  openModal('userMenuModal');
+}
+
+// ==========================================
+// GUN SYNC
+// ==========================================
+function syncToGun(){
+  if(!gunReady||isViewOnly) return;
+  room.get('checks').put(JSON.stringify(checkState));
+  room.get('notes').put(JSON.stringify(noteState));
+  room.get('overrides').put(JSON.stringify(overrides));
+  room.get('deleted').put(JSON.stringify(deletedActs));
+  room.get('extra').put(JSON.stringify(extraActs));
+  room.get('gnotes').put(JSON.stringify(globalNotes));
+}
+
+function listenGun(){
+  if(!gunReady) return;
+  room.get('checks').on(v=>{if(!v)return;try{const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(checkState)){checkState=d;saveLocal();applyChecks();recalcAll();}}catch(e){}});
+  room.get('notes').on(v=>{if(!v)return;try{const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(noteState)){noteState=d;saveLocal();applyNotes();}}catch(e){}});
+  room.get('overrides').on(v=>{if(!v)return;try{const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(overrides)){overrides=d;saveLocal();renderAll();}}catch(e){}});
+  room.get('deleted').on(v=>{if(!v)return;try{const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(deletedActs)){deletedActs=d;saveLocal();renderAll();}}catch(e){}});
+  room.get('extra').on(v=>{if(!v)return;try{const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(extraActs)){extraActs=d;saveLocal();renderAll();}}catch(e){}});
+  room.get('gnotes').on(v=>{if(!v)return;try{const d=JSON.parse(v);if(JSON.stringify(d)!==JSON.stringify(globalNotes)){globalNotes=d;saveLocal();applyGlobalNotes();}}catch(e){}});
+}
+
+// ==========================================
+// CHANGELOG
+// ==========================================
+function logChange(type, data){
+  if(!currentUser||isViewOnly) return;
+  const entry={
+    by:currentUser.alias, byName:currentUser.name,
+    ts:Date.now(), type,
+    actTitle:data.actTitle||'', actId:data.actId||'',
+    field:data.field||'', val:data.val||'', extra:data.extra||''
+  };
+  changelogEntries.unshift(entry);
+  if(gunReady) room.get('log').set(entry);
+}
+
+function loadChangelogFromGun(){
+  if(!gunReady) return;
+  const entries=[];
+  room.get('log').map().once((data,key)=>{ if(data&&data.ts) entries.push({...data,_key:key}); });
+  setTimeout(()=>{
+    changelogEntries=entries.sort((a,b)=>b.ts-a.ts);
+    renderChangelog();
+    // Populate user filter
+    const users=[...new Set(changelogEntries.map(e=>e.byName||e.by))];
+    const sel=document.getElementById('clFilterUser');
+    sel.innerHTML='<option value="">Todos los usuarios</option>'+users.map(u=>`<option value="${u}">${u}</option>`).join('');
+    // Also listen for new entries
+    room.get('log').map().on((data,key)=>{
+      if(!data||!data.ts) return;
+      if(!changelogEntries.find(e=>e._key===key)){
+        changelogEntries.unshift({...data,_key:key});
+        changelogEntries.sort((a,b)=>b.ts-a.ts);
+        renderChangelog();
+      }
+    });
+  },800);
+}
+
+const CL_ICONS={check:'✅',uncheck:'🔲',note:'📝',edit:'✏️',add:'➕',delete:'🗑️',gnote:'📄'};
+const CL_LABELS={
+  check:'marcó como completada',uncheck:'desmarcó',
+  note:'agregó una nota en',edit:'editó la actividad',
+  add:'agregó una actividad nueva en','delete':'eliminó una actividad',
+  gnote:'actualizó las notas generales de'
+};
+
+function relTime(ts){
+  const d=Date.now()-ts;
+  if(d<60000) return 'hace unos segundos';
+  if(d<3600000) return `hace ${Math.floor(d/60000)} min`;
+  if(d<86400000) return `hace ${Math.floor(d/3600000)} h`;
+  return new Date(ts).toLocaleDateString('es-MX',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+}
+
+function renderChangelog(){
+  const body=document.getElementById('clBody');
+  const filterUser=document.getElementById('clFilterUser').value;
+  const filterType=document.getElementById('clFilterType').value;
+  let list=changelogEntries;
+  if(filterUser) list=list.filter(e=>(e.byName||e.by)===filterUser);
+  if(filterType) list=list.filter(e=>e.type===filterType);
+  if(!list.length){ body.innerHTML='<div class="cl-empty">No hay registros aún.</div>'; return; }
+  body.innerHTML=list.slice(0,100).map(e=>{
+    const initials=(e.byName||e.by||'?').split(' ').map(w=>w[0]).join('').substr(0,2).toUpperCase();
+    const icon=CL_ICONS[e.type]||'•';
+    const label=CL_LABELS[e.type]||e.type;
+    const title=e.actTitle?' "<em>'+e.actTitle.substr(0,40)+(e.actTitle.length>40?'…':'')+'</em>"':'';
+    return `<div class="cl-entry">
+      <div class="cl-avatar">${initials}</div>
+      <div class="cl-info">
+        <div class="cl-user">${e.byName||e.by}</div>
+        <div class="cl-action">${icon} ${label}${title}</div>
+        <div class="cl-time">${relTime(e.ts)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openChangelog(){ document.getElementById('changelogPanel').classList.add('open'); loadChangelogFromGun(); }
+function closeChangelog(){ document.getElementById('changelogPanel').classList.remove('open'); }
+
+// ==========================================
+// RENDER
+// ==========================================
+function getActivities(dayObj){
+  const base=dayObj.acts.filter(a=>!deletedActs[a.id]).map(a=>overrides[a.id]?{...a,...overrides[a.id]}:a);
+  const extras=(extraActs[dayObj.id]||[]).filter(a=>!deletedActs[a.id]);
+  return [...base,...extras];
+}
+
+function whoChecked(actId){
+  if(!checkState[actId]) return '';
+  const entry=changelogEntries.find(e=>e.actId===actId&&e.type==='check');
+  return entry ? `Completado por ${entry.byName||entry.by}` : '';
+}
+
+function renderActivity(a){
+  const tagLabel=TAG_LABELS[a.tag]||a.tag;
+  const checked=checkState[a.id]?'checked':'';
+  const doneClass=checkState[a.id]?'done':'';
+  const noteVal=(noteState[a.id]||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const who=checkState[a.id]?`<div class="act-who" id="who-${a.id}">${whoChecked(a.id)}</div>`:'<div class="act-who" id="who-'+a.id+'"></div>';
+  const disAttr=(!currentUser&&!isViewOnly)?'disabled':'';
+  return `<div class="activity" id="act-${a.id}">
+  <div class="act-check"><input type="checkbox" id="cb-${a.id}" ${checked} ${disAttr} onchange="toggleCheck('${a.id}',this.checked,'${(a.title||'').replace(/'/g,"\\'")}')"></div>
+  <div class="act-body">
+    <div class="act-time">${a.time}</div>
+    <span class="act-tag tag-${a.tag}">${tagLabel}</span>
+    <div class="act-title ${doneClass}" id="title-${a.id}">${a.title}</div>
+    ${who}
+    <div class="act-detail">${a.detail}</div>
+    <div class="act-note"><textarea id="note-${a.id}" placeholder="Notas / pendientes..." ${disAttr||isViewOnly?'disabled':''} onchange="saveNote('${a.id}',this.value,'${(a.title||'').replace(/'/g,"\\'")}')"></textarea></div>
+    <div class="act-actions"><button class="btn btn-ghost btn-sm" onclick="openEditActivity('${a.id}')">✏️ Editar</button></div>
+  </div>
+</div>`;
+}
+
+function renderDay(dayObj){
+  const acts=getActivities(dayObj);
+  return `<div class="day-card" id="dc-${dayObj.id}">
+  <div class="day-header" onclick="toggleDay('${dayObj.id}')">
+    <div class="day-num">${dayObj.num}</div>
+    <div class="day-info"><h3>${dayObj.title}</h3><p>${dayObj.loc}</p></div>
+    <span class="day-dprog" id="dp-${dayObj.id}"></span>
+    <span class="day-toggle" id="dt-${dayObj.id}">▼</span>
+  </div>
+  <div class="activities" id="da-${dayObj.id}">
+    ${acts.map(renderActivity).join('')}
+    <button class="add-act-btn" onclick="openAddActivity('${dayObj.id}')">+ Agregar actividad</button>
+  </div>
+</div>`;
+}
+
+function renderAll(){
+  ['contralor','fiscal'].forEach(tab=>{
+    ['w1','w2'].forEach(week=>{
+      const c=document.getElementById(tab+'-'+week);
+      if(c) c.innerHTML=AGENDA_DATA[tab][week].map(renderDay).join('');
+    });
+  });
+  const open=JSON.parse(sessionStorage.getItem('mrt_open')||'[]');
+  open.forEach(id=>{ const el=document.getElementById('da-'+id); const t=document.getElementById('dt-'+id); if(el){el.classList.add('open');if(t)t.classList.add('open');} });
+  applyNotes(); applyAdminMode(); recalcAll();
+  if(!currentUser&&!isViewOnly) document.querySelectorAll('.act-check input,.act-note textarea,.notes-global textarea').forEach(el=>el.disabled=true);
+}
+
+function applyChecks(){
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{
+    const id=cb.id.replace('cb-','');
+    if(id&&checkState.hasOwnProperty(id)){
+      cb.checked=!!checkState[id];
+      const t=document.getElementById('title-'+id); if(t) t.classList.toggle('done',!!checkState[id]);
+    }
+  });
+}
+
+function applyNotes(){
+  Object.keys(noteState).forEach(id=>{ const el=document.getElementById('note-'+id); if(el&&el.value!==(noteState[id]||'')) el.value=noteState[id]||''; });
+}
+
+function applyGlobalNotes(){
+  ['contralor','fiscal'].forEach(tab=>{ const el=document.getElementById('gnote-'+tab); if(el&&globalNotes[tab]!==undefined) el.value=globalNotes[tab]||''; });
+}
+
+// ==========================================
+// INTERACTIONS
+// ==========================================
+function toggleCheck(id,val,actTitle){
+  if(isViewOnly) return;
+  if(!currentUser){ alert('Debes iniciar sesión para registrar cambios.'); document.getElementById('cb-'+id).checked=!val; return; }
+  checkState[id]=val;
+  const t=document.getElementById('title-'+id); if(t) t.classList.toggle('done',val);
+  const who=document.getElementById('who-'+id);
+  if(who) who.textContent=val?`Completado por ${currentUser.name}`:'';
+  logChange(val?'check':'uncheck',{actId:id,actTitle});
+  saveLocal(); syncToGun(); recalcAll();
+}
+
+function saveNote(id,val,actTitle){
+  if(isViewOnly||!currentUser) return;
+  noteState[id]=val;
+  logChange('note',{actId:id,actTitle,val:val.substr(0,60)});
+  saveLocal(); syncToGun();
+}
+
+function saveGlobalNote(tab,val){
+  if(isViewOnly||!currentUser) return;
+  globalNotes[tab]=val;
+  logChange('gnote',{actTitle:tab,val:val.substr(0,60)});
+  saveLocal(); syncToGun();
+}
+
+function toggleDay(id){
+  const acts=document.getElementById('da-'+id); const tog=document.getElementById('dt-'+id);
+  if(!acts) return;
+  const open=acts.classList.toggle('open'); if(tog) tog.classList.toggle('open',open);
+  let od=JSON.parse(sessionStorage.getItem('mrt_open')||'[]');
+  if(open){ if(!od.includes(id)) od.push(id); } else od=od.filter(d=>d!==id);
+  sessionStorage.setItem('mrt_open',JSON.stringify(od));
+}
+
+// ==========================================
+// PROGRESS
+// ==========================================
+function getAllIds(tab){
+  const ids=[];
+  ['w1','w2'].forEach(w=>AGENDA_DATA[tab][w].forEach(day=>getActivities(day).forEach(a=>ids.push(a.id))));
+  return ids;
+}
+
+function recalcAll(){
+  ['contralor','fiscal'].forEach(tab=>{
+    const ids=getAllIds(tab); const total=ids.length; const done=ids.filter(id=>checkState[id]).length;
+    const pct=total?Math.round(done/total*100):0;
+    const dt=document.getElementById('total-'+tab); const dd=document.getElementById('done-'+tab);
+    const dp=document.getElementById('pct-'+tab); const db=document.getElementById('bar-'+tab);
+    if(dt) dt.textContent=total; if(dd) dd.textContent=done;
+    if(dp) dp.textContent=pct+'% completado'; if(db) db.style.width=pct+'%';
+  });
+  ['contralor','fiscal'].forEach(tab=>['w1','w2'].forEach(w=>AGENDA_DATA[tab][w].forEach(day=>{
+    const acts=getActivities(day); const total=acts.length; const done=acts.filter(a=>checkState[a.id]).length;
+    const el=document.getElementById('dp-'+day.id); if(el) el.textContent=done+'/'+total;
+    const card=document.getElementById('dc-'+day.id); if(card) card.classList.toggle('complete',done===total&&total>0);
+  })));
+}
+
+// ==========================================
+// TAB / WEEK
+// ==========================================
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&tab==='contralor')||(i===1&&tab==='fiscal')));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  const panel=document.getElementById('tab-'+tab); if(panel) panel.classList.add('active');
+}
+
+function switchWeek(tab,week){
+  const panel=document.getElementById('tab-'+tab); if(!panel) return;
+  panel.querySelectorAll('.week-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&week==='w1')||(i===1&&week==='w2')));
+  panel.querySelectorAll('.week-panel').forEach(p=>p.classList.remove('active'));
+  const wp=document.getElementById(tab+'-'+week); if(wp) wp.classList.add('active');
+}
+
+// ==========================================
+// ADMIN
+// ==========================================
+function openAdminLogin(){ if(adminMode){exitAdmin();return;} document.getElementById('adminPwdInput').value=''; document.getElementById('adminLoginError').style.display='none'; openModal('adminLoginModal'); setTimeout(()=>document.getElementById('adminPwdInput').focus(),100); }
+
+function doAdminLogin(){
+  if(document.getElementById('adminPwdInput').value===adminPwd){
+    adminMode=true; closeModal('adminLoginModal'); applyAdminMode();
+    document.getElementById('adminBtn').textContent='🔓 Admin ON';
+    document.getElementById('adminBtn').style.background='var(--danger)';
+    document.getElementById('adminBtn').style.color='#fff';
+  } else { document.getElementById('adminLoginError').style.display='block'; }
+}
+
+function exitAdmin(){
+  adminMode=false; applyAdminMode();
+  document.getElementById('adminBtn').textContent='🔐 Admin';
+  document.getElementById('adminBtn').style.background='';
+  document.getElementById('adminBtn').style.color='';
+}
+
+function applyAdminMode(){
+  document.querySelectorAll('.day-card').forEach(el=>el.classList.toggle('admin-mode',adminMode));
+  ['contralor','fiscal'].forEach(tab=>{ const b=document.getElementById('adminBar-'+tab); if(b) b.classList.toggle('visible',adminMode); });
+}
+
+function openChangePwd(){ document.getElementById('pwdError').style.display='none'; openModal('pwdModal'); }
+function changePwd(){
+  const cur=document.getElementById('pwdCurrent').value;
+  const nw=document.getElementById('pwdNew').value;
+  const cf=document.getElementById('pwdConfirm').value;
+  if(cur!==adminPwd||nw!==cf||nw.length<4){document.getElementById('pwdError').style.display='block';return;}
+  adminPwd=nw; localStorage.setItem('mrt_admin_pwd_'+roomId,adminPwd);
+  closeModal('pwdModal'); alert('Contraseña actualizada.');
+}
+
+// ==========================================
+// EDIT / ADD / DELETE
+// ==========================================
+function openEditActivity(actId){
+  let act=null;
+  for(const tab of['contralor','fiscal'])for(const w of['w1','w2'])for(const day of AGENDA_DATA[tab][w]){
+    const f=getActivities(day).find(a=>a.id===actId); if(f){act=f;break;}
+  }
+  if(!act) return;
+  document.getElementById('editActId').value=actId;
+  document.getElementById('editTime').value=act.time||'';
+  document.getElementById('editTag').value=act.tag||'admin';
+  document.getElementById('editTitle').value=act.title||'';
+  document.getElementById('editDetail').value=act.detail||'';
+  openModal('editModal');
+}
+
+function saveActivityEdit(){
+  const id=document.getElementById('editActId').value;
+  const oldTitle=document.getElementById('editTitle').value;
+  overrides[id]={time:document.getElementById('editTime').value,tag:document.getElementById('editTag').value,title:document.getElementById('editTitle').value,detail:document.getElementById('editDetail').value};
+  logChange('edit',{actId:id,actTitle:oldTitle});
+  saveLocal(); syncToGun(); closeModal('editModal'); renderAll();
+}
+
+function deleteActivity(){
+  const id=document.getElementById('editActId').value;
+  if(!confirm('¿Eliminar esta actividad?')) return;
+  const title=document.getElementById('editTitle').value;
+  deletedActs[id]=true;
+  logChange('delete',{actId:id,actTitle:title});
+  saveLocal(); syncToGun(); closeModal('editModal'); renderAll();
+}
+
+function openAddActivity(dayId){ document.getElementById('addDayId').value=dayId; document.getElementById('addTime').value=''; document.getElementById('addTitle').value=''; document.getElementById('addDetail').value=''; openModal('addModal'); }
+
+function saveNewActivity(){
+  const dayId=document.getElementById('addDayId').value;
+  const title=document.getElementById('addTitle').value.trim();
+  if(!title){alert('El título es requerido.');return;}
+  const newAct={id:dayId+'-x'+Date.now(),time:document.getElementById('addTime').value,tag:document.getElementById('addTag').value,title,detail:document.getElementById('addDetail').value};
+  if(!extraActs[dayId]) extraActs[dayId]=[];
+  extraActs[dayId].push(newAct);
+  logChange('add',{actId:newAct.id,actTitle:title,extra:dayId});
+  saveLocal(); syncToGun(); closeModal('addModal'); renderAll();
+}
+
+// ==========================================
+// USERS MODAL
+// ==========================================
+function openUsersModal(){
+  const c=document.getElementById('usersListContainer');
+  c.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:10px 0;">Cargando...</div>';
+  openModal('usersModal');
+  if(!gunReady){c.innerHTML='<div style="color:var(--muted);font-size:.82rem;">Sin conexión. Usuarios no disponibles.</div>';return;}
+  const users=[];
+  room.get('users').map().once((data,alias)=>{ if(data&&data.name) users.push({...data,alias}); });
+  setTimeout(()=>{
+    if(!users.length){c.innerHTML='<div style="color:var(--muted);font-size:.82rem;">No hay usuarios registrados aún.</div>';return;}
+    c.innerHTML=users.map(u=>{
+      const initials=u.name.split(' ').map(w=>w[0]).join('').substr(0,2).toUpperCase();
+      const roleBadge=u.role==='admin'?'admin':'user';
+      return `<div class="user-row">
+        <div class="u-avatar">${initials}</div>
+        <div class="u-info"><div class="u-name">${u.name}</div><div class="u-email">${u.email}</div></div>
+        <span class="u-badge ${roleBadge}">${u.role==='admin'?'Admin':'Colaborador'}</span>
+        ${adminMode&&u.alias!==currentUser?.alias?`<button class="btn btn-ghost btn-sm" onclick="toggleUserRole('${u.alias}','${u.role||'user'}')">⬆️ Rol</button>`:''}
+      </div>`;
+    }).join('');
+  },600);
+}
+
+function toggleUserRole(alias,currentRole){
+  const newRole=currentRole==='admin'?'user':'admin';
+  if(!confirm(`¿Cambiar el rol de ${alias} a ${newRole}?`)) return;
+  room.get('users').get(alias).get('role').put(newRole);
+  setTimeout(openUsersModal,400);
+}
+
+// ==========================================
+// SHARE & PDF
+// ==========================================
+function getEditUrl(){ return window.location.origin+window.location.pathname+(window.location.search||'')+window.location.hash; }
+function getViewUrl(){ return window.location.origin+window.location.pathname+'?view=1'+window.location.hash; }
+
+function shareEdit(){
+  const url=getEditUrl();
+  ['contralor','fiscal'].forEach(tab=>{
+    document.getElementById('shareRow-'+tab).style.display='flex';
+    document.getElementById('shareUrlText-'+tab).textContent=url;
+  });
+  navigator.clipboard.writeText(url).then(()=>alert('✅ URL de edición copiada:\n'+url+'\n\nLos usuarios deben registrarse para acceder.')).catch(()=>prompt('URL de edición:',url));
+}
+
+function shareView(){
+  const url=getViewUrl();
+  navigator.clipboard.writeText(url).then(()=>alert('👁️ URL de solo lectura copiada:\n'+url+'\n\nCualquier persona puede ver el avance sin necesidad de cuenta.\n\nCompártela con directivos para seguimiento.')).catch(()=>prompt('URL solo lectura:',url));
+}
+
+function doCopy(tab){ navigator.clipboard.writeText(getEditUrl()).then(()=>alert('URL copiada.')).catch(()=>{}); }
+
+function printPDF(){ window.print(); }
+
+// ==========================================
+// MODAL HELPERS
+// ==========================================
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m=>{ m.addEventListener('click',e=>{ if(e.target===m&&m.id!=='authModal') closeModal(m.id); }); });
+
+// ==========================================
+// INIT
+// ==========================================
+loadLocal();
+renderAll();
+applyGlobalNotes();
+listenGun();
+
+if(currentUser){
+  closeModal('authModal');
+  updateUserUI();
+  loadChangelogFromGun();
+} else if(isViewOnly){
+  closeModal('authModal');
+}
+
+// Open Day 1 of each tab by default
+['cc-d1','ff-d1'].forEach(id=>{
+  const el=document.getElementById('da-'+id); const t=document.getElementById('dt-'+id);
+  if(el&&!el.classList.contains('open')){ el.classList.add('open'); if(t) t.classList.add('open'); }
+  let od=JSON.parse(sessionStorage.getItem('mrt_open')||'[]');
+  if(!od.includes(id)){ od.push(id); sessionStorage.setItem('mrt_open',JSON.stringify(od)); }
+});
+</script>
+</body>
+</html>
