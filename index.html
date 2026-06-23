@@ -50,7 +50,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#212529;
 .btn:disabled{opacity:.45;cursor:not-allowed;}
 
 /* TABS */
-.tabs{display:flex;background:#fff;border-bottom:2px solid var(--border);padding:0 24px;}
+.tabs{display:none;}
 .tab-btn{padding:12px 22px;border:none;background:none;cursor:pointer;font-size:.88rem;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .2s;}
 .tab-btn.active{color:var(--primary);border-bottom-color:var(--accent);}
 
@@ -196,7 +196,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:var(--bg);color:#212529;
   .main{padding:0;max-width:100%;}
   .tab-panel{display:block!important;}
   .week-panel{display:block!important;}
-  .tabs{display:none!important;}
+  .tabs{display:none;}
   h2.print-title{display:block!important;font-size:1.1rem;color:#000;margin:10px 0 6px;}
   .act-check input[type="checkbox"]{-webkit-appearance:none;border:1.5px solid #333;width:14px;height:14px;vertical-align:middle;}
   .act-check input:checked{background:#333;}
@@ -245,15 +245,11 @@ body.view-only .act-actions{display:none!important;}
 <div class="gold-bar"></div>
 
 <!-- TABS -->
-<div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('contralor')">📊 Contralor (Contador General)</button>
-  <button class="tab-btn" onclick="switchTab('fiscal')">⚖️ Superintendente de Impuestos <span class="badge-new">NUEVO</span></button>
-</div>
 
 <!-- TAB: CONTRALOR -->
 <div class="tab-panel active" id="tab-contralor">
 <div class="main">
-  <h2 class="print-title">Agenda de Onboarding — Contralor (Contador General)</h2>
+  <h2 class="print-title">Agenda de Onboarding — Minera Río Tinto</h2>
   <div class="admin-bar" id="adminBar-contralor">
     <span class="admin-badge">✏️ MODO ADMIN</span>
     <span style="font-size:.8rem;color:#555;">Edición habilitada.</span>
@@ -267,7 +263,7 @@ body.view-only .act-actions{display:none!important;}
     <button class="btn btn-ghost btn-sm" onclick="doCopy('contralor')">Copiar</button>
   </div>
   <div class="progress-card">
-    <h3>📊 Progreso — Contralor (Contador General)</h3>
+    <h3>📊 Progreso — Onboarding</h3>
     <div class="prog-row"><span id="pct-contralor">0% completado</span><span><strong id="done-contralor">0</strong> de <strong id="total-contralor">0</strong> actividades</span></div>
     <div class="bar-outer"><div class="bar-inner" id="bar-contralor" style="width:0%"></div></div>
     <div class="prog-stats"><span><strong>Reporte a:</strong> Director de Administración y Finanzas</span><span><strong>Tipo:</strong> Reemplazo</span></div>
@@ -287,54 +283,13 @@ body.view-only .act-actions{display:none!important;}
   <div class="week-panel active" id="contralor-w1"></div>
   <div class="week-panel" id="contralor-w2"></div>
   <div class="notes-global">
-    <h3>📝 Notas Generales — Contralor</h3>
+    <h3>📝 Notas Generales</h3>
     <textarea id="gnote-contralor" placeholder="Observaciones generales, contactos clave, pendientes..." onchange="saveGlobalNote('contralor',this.value)"></textarea>
   </div>
 </div>
 </div>
 
 <!-- TAB: FISCAL -->
-<div class="tab-panel" id="tab-fiscal">
-<div class="main">
-  <h2 class="print-title">Agenda de Onboarding — Superintendente de Impuestos</h2>
-  <div class="admin-bar" id="adminBar-fiscal">
-    <span class="admin-badge">✏️ MODO ADMIN</span>
-    <span style="font-size:.8rem;color:#555;">Edición habilitada.</span>
-    <button class="btn btn-ghost btn-sm" onclick="openUsersModal()">👥 Usuarios</button>
-    <button class="btn btn-ghost btn-sm" onclick="openChangePwd()">🔑 Contraseña</button>
-    <button class="btn btn-danger btn-sm" onclick="exitAdmin()">Salir</button>
-  </div>
-  <div id="shareRow-fiscal" class="share-row" style="display:none;">
-    <strong style="font-size:.78rem;white-space:nowrap;">🔗 URL compartida:</strong>
-    <span class="share-url" id="shareUrlText-fiscal"></span>
-    <button class="btn btn-ghost btn-sm" onclick="doCopy('fiscal')">Copiar</button>
-  </div>
-  <div class="progress-card">
-    <h3>⚖️ Progreso — Superintendente de Impuestos</h3>
-    <div class="prog-row"><span id="pct-fiscal">0% completado</span><span><strong id="done-fiscal">0</strong> de <strong id="total-fiscal">0</strong> actividades</span></div>
-    <div class="bar-outer"><div class="bar-inner" id="bar-fiscal" style="width:0%"></div></div>
-    <div class="prog-stats"><span><strong>Reporte a:</strong> Director de Administración y Finanzas</span><span><strong>Tipo:</strong> Posición nueva</span></div>
-  </div>
-  <div class="legend">
-    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-dir)"></div>Reunión Dirección</div>
-    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-fiscal)"></div>Fiscal / Consultores</div>
-    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-travel)"></div>Visita a Unidad</div>
-    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-op)"></div>Reunión Operaciones</div>
-    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-review)"></div>Revisión / Entregable</div>
-    <div class="leg-item"><div class="leg-dot" style="background:var(--tag-admin)"></div>Administrativa</div>
-  </div>
-  <div class="week-nav">
-    <button class="week-btn active" onclick="switchWeek('fiscal','w1')">Semana 1 — Contexto y Diagnóstico Fiscal</button>
-    <button class="week-btn" onclick="switchWeek('fiscal','w2')">Semana 2 — Campo y Plan Fiscal</button>
-  </div>
-  <div class="week-panel active" id="fiscal-w1"></div>
-  <div class="week-panel" id="fiscal-w2"></div>
-  <div class="notes-global">
-    <h3>📝 Notas Generales — Superintendente de Impuestos</h3>
-    <textarea id="gnote-fiscal" placeholder="Criterios fiscales a validar, contactos externos, pendientes con consultores..." onchange="saveGlobalNote('fiscal',this.value)"></textarea>
-  </div>
-</div>
-</div>
 
 <!-- CHANGELOG PANEL -->
 <div class="changelog-panel" id="changelogPanel">
@@ -565,63 +520,6 @@ const AGENDA_DATA={
       ]}
     ]
   },
-  fiscal:{
-    w1:[
-      {id:'ff-d1',num:1,title:'Lunes — Día 1 | Bienvenida y Alineación Estratégica',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
-        {id:'ff-d1-a1',time:'08:00 – 09:00',tag:'admin',title:'Alta administrativa y entrega de accesos',detail:'Firma de contrato, credencial, correo corporativo, acceso a SAP Business One e instalaciones.'},
-        {id:'ff-d1-a2',time:'09:00 – 11:30',tag:'dir',title:'Reunión estratégica de bienvenida — Director de Administración y Finanzas',detail:'Por qué existe la posición. Objetivo: cero contingencias fiscales materiales. Éxito 6 meses: diagnóstico + Plan Fiscal Corporativo. Alcance grupal. Autoridad fiscal. Relación con Contralor.'},
-        {id:'ff-d1-a3',time:'11:30 – 12:30',tag:'admin',title:'Presentación con equipo de Finanzas y Contabilidad',detail:'Quién hace qué en materia fiscal hoy. Punto de handoff de responsabilidades.'},
-        {id:'ff-d1-a4',time:'13:30 – 15:30',tag:'dir',title:'Sesión con Contador General saliente — Estado fiscal actual',detail:'Calendario fiscal del grupo. Estado de cumplimiento (ISR, IVA, IMSS, INFONAVIT, Minería). Última opinión SAT. Saldos a favor. Procesos a transferir.'},
-        {id:'ff-d1-a5',time:'15:30 – 17:30',tag:'review',title:'Revisión de documentación fiscal básica',detail:'RFC de cada entidad, última declaración anual, declaraciones mensuales recientes de IVA, acuse de opinión SAT.'}
-      ]},
-      {id:'ff-d2',num:2,title:'Martes — Día 2 | Sesión con Consultores Fiscales — Parte 1',loc:'Sede corporativa / oficina consultores | 9:00 – 18:00 hrs',acts:[
-        {id:'ff-d2-a1',time:'09:00 – 12:00',tag:'fiscal',title:'Sesión 1 con Consultores Fiscales — Estrategia fiscal actual del grupo',detail:'Estructura fiscal corporativa actual. Estrategias de optimización vigentes. Criterios fiscales adoptados (ISR, IVA, regímenes). Figuras fiscales en uso. Regímenes especiales de minería. Beneficios del sector. Interacción actual con SAT.'},
-        {id:'ff-d2-a2',time:'13:00 – 16:00',tag:'fiscal',title:'Sesión 1 (cont.) — Contingencias y expedientes abiertos',detail:'Contingencias fiscales identificadas y cuantificación. Expedientes de auditoría SAT en proceso. Diferencias de criterio pendientes. Cartas de requerimiento y estrategia de respuesta. Provisiones contables.'},
-        {id:'ff-d2-a3',time:'16:00 – 17:30',tag:'review',title:'Revisión de declaraciones anuales y provisiones fiscales',detail:'Declaración anual más reciente. ISR provisional vs. anual. Diferencias contable-fiscal (PTU, pérdidas).'}
-      ]},
-      {id:'ff-d3',num:3,title:'Miércoles — Día 3 | Sesión con Consultores Fiscales — Parte 2',loc:'Sede corporativa / oficina consultores | 9:00 – 18:00 hrs',acts:[
-        {id:'ff-d3-a1',time:'09:00 – 12:00',tag:'fiscal',title:'Sesión 2 — Precios de Transferencia e Intercompañía',detail:'Operaciones intercompañía y tratamiento fiscal. Estudio de precios de transferencia vigente. Cumplimiento DISIF. Riesgos en operaciones intercompañía.'},
-        {id:'ff-d3-a2',time:'13:00 – 15:30',tag:'fiscal',title:'Sesión 2 (cont.) — Proyectos de inversión: impacto fiscal',detail:'Tratamiento fiscal de nuevos proyectos (Namiquipa). Estructuración fiscal para expansión. Implicaciones de CAPEX y deducibilidad. Deducción inmediata. Impacto fiscal de contratos con contratistas.'},
-        {id:'ff-d3-a3',time:'15:30 – 17:00',tag:'dir',title:'Alineación con Director de Adm. y Finanzas — Cierre con consultores',detail:'Hallazgos de sesiones con consultores. Temas que requieren decisión ejecutiva. Definir continuidad con consultores.'}
-      ]},
-      {id:'ff-d4',num:4,title:'Jueves — Día 4 | Reuniones Internas con Áreas Relacionadas',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
-        {id:'ff-d4-a1',time:'08:30 – 10:00',tag:'op',title:'Reunión con Contralor — Interfaz contable-fiscal',detail:'Cómo se produce la información contable para la función fiscal. Conciliación contable-fiscal. Determinación de impuestos sobre base contable. Provisiones en EEFF. Flujo de trabajo entre Contraloría y función fiscal.'},
-        {id:'ff-d4-a2',time:'10:00 – 11:30',tag:'op',title:'Reunión con Compras / Legal — Validación fiscal de contratos',detail:'Proceso de revisión fiscal de contratos. Contratos con implicaciones fiscales relevantes. Proceso de validación 69-B SAT. Retenciones aplicables.'},
-        {id:'ff-d4-a3',time:'11:30 – 13:00',tag:'op',title:'Reunión con Recursos Humanos — Implicaciones fiscales laborales',detail:'Esquemas de nómina y tratamiento fiscal. Prestaciones con tratamiento especial. Cumplimiento IMSS/INFONAVIT. Contratistas vs. empleados. PTU.'},
-        {id:'ff-d4-a4',time:'14:00 – 16:00',tag:'review',title:'Revisión de saldos a favor y oportunidades de recuperación',detail:'Saldos a favor de IVA susceptibles de devolución o compensación. Impacto estimado en flujo de efectivo.'},
-        {id:'ff-d4-a5',time:'16:00 – 18:00',tag:'review',title:'Revisión de estructura del grupo — Entidades, RFC e intercompañía',detail:'Mapear entidades legales del grupo, RFC, regímenes fiscales y operaciones entre ellas. Base para diagnóstico fiscal.'}
-      ]},
-      {id:'ff-d5',num:5,title:'Viernes — Día 5 | Cierre Semana 1 + Inicio del Diagnóstico',loc:'Sede corporativa Chihuahua | 8:00 – 17:00 hrs',acts:[
-        {id:'ff-d5-a1',time:'08:00 – 11:00',tag:'review',title:'Elaboración del borrador de Diagnóstico Fiscal Integral',detail:'Estado de cumplimiento por impuesto y entidad. Contingencias y cuantificación. Oportunidades de optimización. Saldos recuperables. Riesgos de precios de transferencia. Brechas vs. mejores prácticas del sector.'},
-        {id:'ff-d5-a2',time:'11:00 – 12:00',tag:'admin',title:'Logística Semana 2 — Confirmar visitas a unidades',detail:'Confirmar agenda de campo: Cieneguita, Matamoros, Minas Olivos y Realito, Proyecto Namiquipa.'},
-        {id:'ff-d5-a3',time:'13:00 – 15:00',tag:'dir',title:'Presentación de cierre Semana 1 al Director de Adm. y Finanzas',detail:'Avance del diagnóstico, hallazgos de mayor impacto, agenda confirmada semana 2, información adicional requerida.'}
-      ]}
-    ],
-    w2:[
-      {id:'ff-d6',num:6,title:'Lunes — Día 6 | Visita a Unidad Cieneguita',loc:'Unidad Cieneguita | Día completo',acts:[
-        {id:'ff-d6-a1',time:'Mañana',tag:'travel',title:'Recorrido operativo — Cieneguita',detail:'Volúmenes, insumos, contratistas y bienes que generan cargas fiscales. Contexto para evaluación fiscal de la unidad.'},
-        {id:'ff-d6-a2',time:'Tarde',tag:'op',title:'Mesa fiscal con Administrador de Unidad — Cieneguita',detail:'Proveedores y contratistas: ¿CFDI correcto? Compras sin CFDI. Gastos no deducibles. Impuesto especial de minería. Tratamiento fiscal de pasivos ambientales.'}
-      ]},
-      {id:'ff-d7',num:7,title:'Martes — Día 7 | Visita a Unidad Matamoros',loc:'Unidad Matamoros | Día completo',acts:[
-        {id:'ff-d7-a1',time:'Mañana',tag:'travel',title:'Recorrido operativo — Matamoros',detail:'Mismo enfoque que Cieneguita. Particularidades operativas con impacto fiscal.'},
-        {id:'ff-d7-a2',time:'Tarde',tag:'op',title:'Mesa fiscal con Administrador de Unidad — Matamoros',detail:'Misma agenda fiscal. Diferencias y particulares de Matamoros en CFDI y operaciones locales.'}
-      ]},
-      {id:'ff-d8',num:8,title:'Miércoles — Día 8 | Visita a Minas Olivos y Realito',loc:'Unidades Olivos / Realito | Día completo',acts:[
-        {id:'ff-d8-a1',time:'Mañana — Olivos',tag:'travel',title:'Recorrido y mesa fiscal — Minas Olivos',detail:'¿Opera bajo la misma entidad legal que Realito? Implicaciones en ingresos y deducciones.'},
-        {id:'ff-d8-a2',time:'Tarde — Realito',tag:'travel',title:'Recorrido y mesa fiscal — Realito',detail:'Confirmar entidad legal, RFC y régimen fiscal. Transacciones intercompañía específicas.'}
-      ]},
-      {id:'ff-d9',num:9,title:'Jueves — Día 9 | Visita Proyecto Namiquipa + Regreso',loc:'Proyecto Namiquipa | Medio día + regreso',acts:[
-        {id:'ff-d9-a1',time:'Mañana',tag:'travel',title:'Visita a Proyecto Namiquipa — Análisis fiscal',detail:'Entidad legal y RFC. Tratamiento fiscal de exploración y desarrollo. Contratos: retenciones y comprobación. IVA acreditable en etapa de inversión. Importación de bienes de capital.'},
-        {id:'ff-d9-a2',time:'Tarde (en tránsito)',tag:'review',title:'Consolidación de hallazgos fiscales de campo',detail:'Integrar observaciones de 4 unidades. Riesgos recurrentes vs. específicos por unidad.'}
-      ]},
-      {id:'ff-d10',num:10,title:'Viernes — Día 10 | Diagnóstico Fiscal + Plan Fiscal Corporativo',loc:'Sede corporativa Chihuahua | 8:00 – 18:00 hrs',acts:[
-        {id:'ff-d10-a1',time:'08:00 – 11:00',tag:'review',title:'Finalización del Diagnóstico Fiscal Integral',detail:'Incorporar hallazgos de campo. Cuantificar contingencias y oportunidades. 3 prioridades del Plan Fiscal Corporativo año 1.'},
-        {id:'ff-d10-a2',time:'11:00 – 12:00',tag:'fiscal',title:'Validación del diagnóstico con Consultores Fiscales (teleconferencia)',detail:'Confirmar alineación con visión externa. Ajustar criterios si hay discrepancia.'},
-        {id:'ff-d10-a3',time:'14:00 – 16:30',tag:'dir',title:'Presentación ejecutiva al Director de Administración y Finanzas',detail:'Diagnóstico Fiscal Integral. Mapa de contingencias cuantificadas. Oportunidades de optimización. Plan Fiscal Corporativo año 1. KPIs propuestos. Modelo con consultores externos.'},
-        {id:'ff-d10-a4',time:'16:30 – 18:00',tag:'admin',title:'Formalización del inicio de operación — Calendario fiscal 30 días',detail:'Primeras obligaciones fiscales a atender. Rutina de revisión con Contraloría. Comunicar nuevo esquema de trabajo fiscal.'}
-      ]}
-    ]
-  }
 };
 
 // ==========================================
@@ -952,7 +850,7 @@ function renderDay(dayObj){
 }
 
 function renderAll(){
-  ['contralor','fiscal'].forEach(tab=>{
+  ['contralor'].forEach(tab=>{
     ['w1','w2'].forEach(week=>{
       const c=document.getElementById(tab+'-'+week);
       if(c) c.innerHTML=AGENDA_DATA[tab][week].map(renderDay).join('');
@@ -979,7 +877,7 @@ function applyNotes(){
 }
 
 function applyGlobalNotes(){
-  ['contralor','fiscal'].forEach(tab=>{ const el=document.getElementById('gnote-'+tab); if(el&&globalNotes[tab]!==undefined) el.value=globalNotes[tab]||''; });
+  ['contralor'].forEach(tab=>{ const el=document.getElementById('gnote-'+tab); if(el&&globalNotes[tab]!==undefined) el.value=globalNotes[tab]||''; });
 }
 
 // ==========================================
@@ -1029,7 +927,7 @@ function getAllIds(tab){
 }
 
 function recalcAll(){
-  ['contralor','fiscal'].forEach(tab=>{
+  ['contralor'].forEach(tab=>{
     const ids=getAllIds(tab); const total=ids.length; const done=ids.filter(id=>checkState[id]).length;
     const pct=total?Math.round(done/total*100):0;
     const dt=document.getElementById('total-'+tab); const dd=document.getElementById('done-'+tab);
@@ -1037,7 +935,7 @@ function recalcAll(){
     if(dt) dt.textContent=total; if(dd) dd.textContent=done;
     if(dp) dp.textContent=pct+'% completado'; if(db) db.style.width=pct+'%';
   });
-  ['contralor','fiscal'].forEach(tab=>['w1','w2'].forEach(w=>AGENDA_DATA[tab][w].forEach(day=>{
+  ['contralor'].forEach(tab=>['w1','w2'].forEach(w=>AGENDA_DATA[tab][w].forEach(day=>{
     const acts=getActivities(day); const total=acts.length; const done=acts.filter(a=>checkState[a.id]).length;
     const el=document.getElementById('dp-'+day.id); if(el) el.textContent=done+'/'+total;
     const card=document.getElementById('dc-'+day.id); if(card) card.classList.toggle('complete',done===total&&total>0);
@@ -1048,9 +946,10 @@ function recalcAll(){
 // TAB / WEEK
 // ==========================================
 function switchTab(tab){
-  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('active',(i===0&&tab==='contralor')||(i===1&&tab==='fiscal')));
+  // Single-tab mode — only contralor
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  const panel=document.getElementById('tab-'+tab); if(panel) panel.classList.add('active');
+  const panel=document.getElementById('tab-contralor');
+  if(panel) panel.classList.add('active');
 }
 
 function switchWeek(tab,week){
@@ -1083,7 +982,7 @@ function exitAdmin(){
 
 function applyAdminMode(){
   document.querySelectorAll('.day-card').forEach(el=>el.classList.toggle('admin-mode',adminMode));
-  ['contralor','fiscal'].forEach(tab=>{ const b=document.getElementById('adminBar-'+tab); if(b) b.classList.toggle('visible',adminMode); });
+  ['contralor'].forEach(tab=>{ const b=document.getElementById('adminBar-'+tab); if(b) b.classList.toggle('visible',adminMode); });
 }
 
 function openChangePwd(){ document.getElementById('pwdError').style.display='none'; openModal('pwdModal'); }
@@ -1101,7 +1000,7 @@ function changePwd(){
 // ==========================================
 function openEditActivity(actId){
   let act=null;
-  for(const tab of['contralor','fiscal'])for(const w of['w1','w2'])for(const day of AGENDA_DATA[tab][w]){
+  for(const tab of['contralor'])for(const w of['w1','w2'])for(const day of AGENDA_DATA[tab][w]){
     const f=getActivities(day).find(a=>a.id===actId); if(f){act=f;break;}
   }
   if(!act) return;
@@ -1183,7 +1082,7 @@ function getViewUrl(){ return window.location.origin+window.location.pathname+'?
 
 function shareEdit(){
   const url=getEditUrl();
-  ['contralor','fiscal'].forEach(tab=>{
+  ['contralor'].forEach(tab=>{
     document.getElementById('shareRow-'+tab).style.display='flex';
     document.getElementById('shareUrlText-'+tab).textContent=url;
   });
